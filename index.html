@@ -580,7 +580,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>إجمالي رأس المال</h3>
-                    <div class="number" id="statsTotalCapital">0 ر.س</div>
+                    <div class="number" id="statsTotalCapital">0 جنيه</div>
                 </div>
             </div>
             <div class="stat-card-advanced">
@@ -589,7 +589,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>إجمالي المصروفات</h3>
-                    <div class="number" id="statsTotalExpenses">0 ر.س</div>
+                    <div class="number" id="statsTotalExpenses">0 جنيه</div>
                 </div>
             </div>
             <div class="stat-card-advanced">
@@ -598,7 +598,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>صافي الأرباح</h3>
-                    <div class="number" id="statsTotalNet">0 ر.س</div>
+                    <div class="number" id="statsTotalNet">0 جنيه</div>
                 </div>
             </div>
         </div>
@@ -655,7 +655,7 @@
                     <input type="text" class="form-control" id="carModel" placeholder="مثال: تويوتا كورولا" required>
                 </div>
                 <div class="form-group">
-                    <label>رأس المال (جنية)</label>
+                    <label>رأس المال (جنيه)</label>
                     <input type="number" class="form-control" id="carCapital" placeholder="50000" required>
                 </div>
                 <div class="form-group">
@@ -689,7 +689,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>المبلغ (ريال)</label>
+                    <label>المبلغ (جنيه)</label>
                     <input type="number" class="form-control" id="expenseAmount" placeholder="1000" required>
                 </div>
                 <div class="form-group">
@@ -724,7 +724,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>المبلغ (ريال)</label>
+                    <label>المبلغ (جنيه)</label>
                     <input type="number" class="form-control" id="capitalAmount" placeholder="10000" required>
                 </div>
                 <div class="form-group">
@@ -1007,11 +1007,11 @@
                         <div class="progress-stats">
                             <div class="progress-item">
                                 <div class="progress-label">رأس المال</div>
-                                <div class="progress-value">${car.capital.toLocaleString()} ر.س</div>
+                                <div class="progress-value">${car.capital.toLocaleString()} جنيه</div>
                             </div>
                             <div class="progress-item">
                                 <div class="progress-label">المصروفات</div>
-                                <div class="progress-value" style="color:#c62828;">${totalExpenses.toLocaleString()} ر.س</div>
+                                <div class="progress-value" style="color:#c62828;">${totalExpenses.toLocaleString()} جنيه</div>
                             </div>
                         </div>
                         
@@ -1023,7 +1023,7 @@
                             <div style="display:flex; justify-content:space-between;">
                                 <span>صافي رأس المال</span>
                                 <span style="font-size:1.5rem; font-weight:bold; color:${netCapital >= 0 ? '#2e7d32' : '#c62828'};">
-                                    ${netCapital.toLocaleString()} ر.س
+                                    ${netCapital.toLocaleString()} جنيه
                                 </span>
                             </div>
                         </div>
@@ -1040,7 +1040,7 @@
                                         <div class="expense-note">${exp.note || 'مصروف'}</div>
                                         <small>${exp.date}</small>
                                     </div>
-                                    <div class="expense-amount">${exp.amount.toLocaleString()} ر.س</div>
+                                    <div class="expense-amount">${exp.amount.toLocaleString()} جنيه</div>
                                 </div>
                             `).join('') : `
                                 <div style="text-align:center; color:#999; padding:10px;">
@@ -1073,9 +1073,9 @@
             const totalNet = cars.reduce((sum, c) => sum + (c.capital - getCarExpenses(c.id)), 0);
             
             document.getElementById('statsTotalCars').innerText = totalCars;
-            document.getElementById('statsTotalCapital').innerText = totalCapital.toLocaleString() + ' ر.س';
-            document.getElementById('statsTotalExpenses').innerText = totalExpenses.toLocaleString() + ' ر.س';
-            document.getElementById('statsTotalNet').innerText = totalNet.toLocaleString() + ' ر.س';
+            document.getElementById('statsTotalCapital').innerText = totalCapital.toLocaleString() + ' جنيه';
+            document.getElementById('statsTotalExpenses').innerText = totalExpenses.toLocaleString() + ' جنيه';
+            document.getElementById('statsTotalNet').innerText = totalNet.toLocaleString() + ' جنيه';
         }
 
         function updateSelects() {
@@ -1214,7 +1214,7 @@
                 
                 let message = `📋 مصروفات السيارة ${car?.number}:\n\n`;
                 carExpenses.forEach(exp => {
-                    message += `📅 ${exp.date}\n💰 ${exp.amount.toLocaleString()} ر.س\n📝 ${exp.note || 'بدون ملاحظات'}\n${'-'.repeat(20)}\n`;
+                    message += `📅 ${exp.date}\n💰 ${exp.amount.toLocaleString()} جنيه\n📝 ${exp.note || 'بدون ملاحظات'}\n${'-'.repeat(20)}\n`;
                 });
                 
                 if (carExpenses.length === 0) {
@@ -1240,8 +1240,8 @@
                 report += '📊 إحصائيات عامة\n';
                 report += '-'.repeat(30) + '\n';
                 report += `عدد السيارات: ${cars.length}\n`;
-                report += `إجمالي رأس المال: ${cars.reduce((s, c) => s + c.capital, 0).toLocaleString()} ر.س\n`;
-                report += `إجمالي المصروفات: ${expenses.reduce((s, e) => s + e.amount, 0).toLocaleString()} ر.س\n\n`;
+                report += `إجمالي رأس المال: ${cars.reduce((s, c) => s + c.capital, 0).toLocaleString()} جنيه\n`;
+                report += `إجمالي المصروفات: ${expenses.reduce((s, e) => s + e.amount, 0).toLocaleString()} جنيه\n\n`;
                 
                 report += '🚗 تفاصيل السيارات\n';
                 report += '-'.repeat(30) + '\n';
@@ -1250,9 +1250,9 @@
                     const carExpenses = getCarExpenses(car.id);
                     report += `\nالسيارة: ${car.number} - ${car.model}\n`;
                     report += `الحالة: ${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}\n`;
-                    report += `رأس المال: ${car.capital.toLocaleString()} ر.س\n`;
-                    report += `إجمالي المصروفات: ${carExpenses.toLocaleString()} ر.س\n`;
-                    report += `الصافي: ${(car.capital - carExpenses).toLocaleString()} ر.س\n`;
+                    report += `رأس المال: ${car.capital.toLocaleString()} جنيه\n`;
+                    report += `إجمالي المصروفات: ${carExpenses.toLocaleString()} جنيه\n`;
+                    report += `الصافي: ${(car.capital - carExpenses).toLocaleString()} جنيه\n`;
                 });
                 
                 const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
