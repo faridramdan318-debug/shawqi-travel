@@ -571,7 +571,7 @@
 </head>
 <body>
     <div class="top-bar">
-        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · متصل بـ Firebase
+        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · تحديث تلقائي لحظي
     </div>
 
     <div class="container">
@@ -831,7 +831,7 @@
         let workEarnings = [];
         let currentFilter = 'all';
         let searchTerm = '';
-        let isLoading = false; // لمنع التحميل المتكرر
+        let isLoading = false;
 
         // ==============================================
         // تحديث حالة الاتصال
@@ -850,26 +850,11 @@
         }
 
         // ==============================================
-        // تحميل البيانات من Firebase (معدل لحل مشكلة الحذف)
+        // تحميل البيانات من Firebase مع تحديث لحظي
         // ==============================================
-        function loadFromFirebase() {
-            if (isLoading) return;
-            isLoading = true;
-            
+        function setupRealtimeUpdates() {
             updateConnectionStatus(true, 'جاري التحميل...');
             
-            let loadedCount = 0;
-            const totalRefs = 3;
-
-            function checkAllLoaded() {
-                loadedCount++;
-                if (loadedCount === totalRefs) {
-                    isLoading = false;
-                    renderAll();
-                    updateConnectionStatus(true, 'تم التحميل');
-                }
-            }
-
             // استماع للسيارات
             database.ref('cars').on('value', (snapshot) => {
                 try {
@@ -882,10 +867,11 @@
                     } else {
                         cars = [];
                     }
+                    renderAll();
+                    updateConnectionStatus(true, 'تم التحديث');
                 } catch (error) {
                     console.error('خطأ في السيارات:', error);
                 }
-                checkAllLoaded();
             });
 
             // استماع للمصروفات
@@ -900,10 +886,11 @@
                     } else {
                         expenses = [];
                     }
+                    renderAll();
+                    updateConnectionStatus(true, 'تم التحديث');
                 } catch (error) {
                     console.error('خطأ في المصروفات:', error);
                 }
-                checkAllLoaded();
             });
 
             // استماع للأرباح
@@ -918,85 +905,57 @@
                     } else {
                         workEarnings = [];
                     }
+                    renderAll();
+                    updateConnectionStatus(true, 'تم التحديث');
                 } catch (error) {
                     console.error('خطأ في الأرباح:', error);
                 }
-                checkAllLoaded();
             });
         }
 
         // ==============================================
         // حفظ البيانات في Firebase
         // ==============================================
-        async function saveAllToFirebase() {
+        async function saveToFirebase(path, data) {
             try {
                 updateConnectionStatus(true, 'جاري الحفظ...');
-                
-                // حفظ السيارات
-                const carsObject = {};
-                cars.forEach(car => {
-                    carsObject[car.id] = {
-                        number: car.number,
-                        model: car.model,
-                        capital: car.capital,
-                        status: car.status
-                    };
-                });
-                
-                // حفظ المصروفات
-                const expensesObject = {};
-                expenses.forEach(exp => {
-                    expensesObject[exp.id] = {
-                        carId: exp.carId,
-                        amount: exp.amount,
-                        date: exp.date,
-                        note: exp.note
-                    };
-                });
-
-                // حفظ الأرباح
-                const workObject = {};
-                workEarnings.forEach(work => {
-                    workObject[work.id] = {
-                        carId: work.carId,
-                        amount: work.amount,
-                        date: work.date,
-                        note: work.note
-                    };
-                });
-                
-                // حفظ الكل في Firebase
-                await Promise.all([
-                    database.ref('cars').set(carsObject),
-                    database.ref('expenses').set(expensesObject),
-                    database.ref('workEarnings').set(workObject)
-                ]);
-                
-                // حفظ نسخة محلية
-                localStorage.setItem('shawqi_backup', JSON.stringify({
-                    cars, expenses, workEarnings
-                }));
-                
+                await database.ref(path).set(data);
                 updateConnectionStatus(true, 'تم الحفظ');
-                console.log('✅ تم حفظ البيانات');
+                return true;
             } catch (error) {
                 console.error('❌ خطأ في الحفظ:', error);
                 updateConnectionStatus(false, 'فشل الحفظ');
                 showToast('خطأ في حفظ البيانات', 'error');
+                return false;
             }
         }
 
         // ==============================================
         // دوال المساعدة
         // ==============================================
-        function getCarExpenses(carId) {
-            return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        // دالة لحساب رأس المال الحالي (رأس المال الأصلي + الأرباح - المصروفات)
+        function getCurrentCapital(carId) {
+            const car = cars.find(c => c.id === carId);
+            if (!car) return 0;
+            
+            const totalExpenses = expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
+            const totalWork = workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
+            
+            return (car.capital || 0) + totalWork - totalExpenses;
         }
 
+        // دالة لحساب إجمالي الأرباح لسيارة معينة
         function getCarWorkEarnings(carId) {
             return workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
         }
 
+        // دالة لحساب إجمالي المصروفات لسيارة معينة
+        function getCarExpenses(carId) {
+            return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
+        }
+
+        // دوال للحصول على آخر 3 عناصر
         function getCarWorkEarningsList(carId) {
             return workEarnings.filter(w => w.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         }
@@ -1005,6 +964,7 @@
             return expenses.filter(e => e.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         }
 
+        // دوال التصفية والبحث
         function filterCars(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -1031,6 +991,7 @@
             return filtered;
         }
 
+        // دوال العرض
         function renderAll() {
             renderCars();
             updateStats();
@@ -1058,7 +1019,7 @@
                 const work_list = getCarWorkEarningsList(car.id);
                 const totalExpenses = getCarExpenses(car.id);
                 const totalWork = getCarWorkEarnings(car.id);
-                const netCapital = (car.capital || 0) + totalWork - totalExpenses;
+                const currentCapital = getCurrentCapital(car.id);
                 
                 return `
                 <div class="car-advanced-card" data-car-id="${car.id}">
@@ -1081,19 +1042,21 @@
                         
                         <div class="progress-stats">
                             <div class="progress-item">
-                                <div class="progress-label">رأس المال</div>
+                                <div class="progress-label">رأس المال الأصلي</div>
                                 <div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div>
                             </div>
                             <div class="progress-item">
-                                <div class="progress-label">المصروفات</div>
-                                <div class="progress-value" style="color:#c62828;">${totalExpenses.toLocaleString()} جنيه</div>
+                                <div class="progress-label">الصافي الحالي</div>
+                                <div class="progress-value" style="color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'}">
+                                    ${currentCapital.toLocaleString()} جنيه
+                                </div>
                             </div>
                         </div>
                         
                         ${work_list.length > 0 ? `
                         <div class="work-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-briefcase"></i> آخر الأرباح</span>
+                                <span><i class="fas fa-briefcase"></i> آخر الأرباح (+)</span>
                                 <span onclick="showAllWork('${car.id}')" style="color:#00b09b; cursor:pointer;">عرض الكل</span>
                             </div>
                             ${work_list.map(work => `
@@ -1110,8 +1073,8 @@
                         
                         <div class="expenses-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-history"></i> آخر المصروفات</span>
-                                <span onclick="showAllExpenses('${car.id}')" style="color:#1e3c72; cursor:pointer;">عرض الكل</span>
+                                <span><i class="fas fa-history"></i> آخر المصروفات (-)</span>
+                                <span onclick="showAllExpenses('${car.id}')" style="color:#c62828; cursor:pointer;">عرض الكل</span>
                             </div>
                             
                             ${expenses_list.length > 0 ? expenses_list.map(exp => `
@@ -1120,7 +1083,7 @@
                                         <div class="expense-note">${exp.note || 'مصروف'}</div>
                                         <small>${exp.date || ''}</small>
                                     </div>
-                                    <div class="expense-amount">${(exp.amount || 0).toLocaleString()} جنيه</div>
+                                    <div class="expense-amount">-${(exp.amount || 0).toLocaleString()} جنيه</div>
                                 </div>
                             `).join('') : `
                                 <div style="text-align:center; color:#999; padding:10px;">
@@ -1129,20 +1092,23 @@
                             `}
                         </div>
                         
-                        <div class="net-profit" style="background:${netCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;">
+                        <div class="net-profit" style="background:${currentCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>💼 الأرباح</span>
+                                <span>💼 إجمالي الأرباح (المضافة)</span>
                                 <span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>🔧 المصروفات</span>
+                                <span>🔧 إجمالي المصروفات (المخصومة)</span>
                                 <span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;">
-                                <span style="font-weight:bold;">الصافي</span>
-                                <span style="font-size:1.5rem; font-weight:bold; color:${netCapital >= 0 ? '#2e7d32' : '#c62828'};">
-                                    ${netCapital.toLocaleString()} جنيه
+                                <span style="font-weight:bold;">رأس المال الحالي</span>
+                                <span style="font-size:1.5rem; font-weight:bold; color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'};">
+                                    ${currentCapital.toLocaleString()} جنيه
                                 </span>
+                            </div>
+                            <div style="font-size:0.8rem; color:#666; margin-top:5px; text-align:center;">
+                                (رأس المال الأصلي + الأرباح - المصروفات)
                             </div>
                         </div>
                         
@@ -1192,7 +1158,7 @@
         }
 
         // ==============================================
-        // العمليات الرئيسية
+        // العمليات الرئيسية - حفظ تلقائي في Firebase
         // ==============================================
         function addCar(e) {
             e.preventDefault();
@@ -1205,8 +1171,14 @@
                 status: document.getElementById('carStatus').value
             };
             
-            cars.push(newCar);
-            saveAllToFirebase();
+            // حفظ مباشر في Firebase
+            database.ref('cars/' + newCar.id).set({
+                number: newCar.number,
+                model: newCar.model,
+                capital: newCar.capital,
+                status: newCar.status
+            });
+            
             closeModal('carModal');
             e.target.reset();
             showToast('تم إضافة السيارة', 'success');
@@ -1215,8 +1187,8 @@
         function toggleCarStatus(id) {
             const car = cars.find(c => c.id === id);
             if (car) {
-                car.status = car.status === 'working' ? 'repair' : 'working';
-                saveAllToFirebase();
+                const newStatus = car.status === 'working' ? 'repair' : 'working';
+                database.ref('cars/' + id + '/status').set(newStatus);
                 showToast('تم تغيير الحالة', 'success');
             }
         }
@@ -1232,8 +1204,13 @@
                 note: document.getElementById('expenseNote').value || 'مصروف'
             };
             
-            expenses.push(newExpense);
-            saveAllToFirebase();
+            database.ref('expenses/' + newExpense.id).set({
+                carId: newExpense.carId,
+                amount: newExpense.amount,
+                date: newExpense.date,
+                note: newExpense.note
+            });
+            
             closeModal('expenseModal');
             e.target.reset();
             showToast('تم تسجيل المصروف', 'success');
@@ -1245,14 +1222,16 @@
             const carId = document.getElementById('capitalCar').value;
             const amount = parseFloat(document.getElementById('capitalAmount').value) || 0;
             
+            // تحديث رأس المال مباشرة
             const car = cars.find(c => c.id === carId);
             if (car) {
-                car.capital = (car.capital || 0) + amount;
-                saveAllToFirebase();
-                closeModal('capitalModal');
-                e.target.reset();
-                showToast('تم إضافة رأس المال', 'success');
+                const newCapital = (car.capital || 0) + amount;
+                database.ref('cars/' + carId + '/capital').set(newCapital);
             }
+            
+            closeModal('capitalModal');
+            e.target.reset();
+            showToast('تم إضافة رأس المال', 'success');
         }
 
         function addWorkEarning(e) {
@@ -1266,8 +1245,13 @@
                 note: document.getElementById('workNote').value || 'شغل'
             };
             
-            workEarnings.push(newWork);
-            saveAllToFirebase();
+            database.ref('workEarnings/' + newWork.id).set({
+                carId: newWork.carId,
+                amount: newWork.amount,
+                date: newWork.date,
+                note: newWork.note
+            });
+            
             closeModal('workModal');
             e.target.reset();
             showToast('تم تسجيل الأرباح', 'success');
@@ -1275,11 +1259,8 @@
 
         function deleteCar(id) {
             if (confirm('⚠️ هل أنت متأكد من الحذف؟')) {
-                cars = cars.filter(c => c.id !== id);
-                expenses = expenses.filter(e => e.carId !== id);
-                workEarnings = workEarnings.filter(w => w.carId !== id);
-                saveAllToFirebase();
-                showToast('تم الحذف', 'warning');
+                database.ref('cars/' + id).remove();
+                showToast('تم حذف السيارة', 'warning');
             }
         }
 
@@ -1328,9 +1309,9 @@
             report += `📅 ${new Date().toLocaleDateString('ar-EG')}\n`;
             report += `═`.repeat(40) + '\n\n';
             report += `عدد السيارات: ${cars.length}\n`;
-            report += `رأس المال: ${cars.reduce((s, c) => s + (c.capital || 0), 0)} جنيه\n`;
-            report += `المصروفات: ${expenses.reduce((s, e) => s + (e.amount || 0), 0)} جنيه\n`;
-            report += `الأرباح: ${workEarnings.reduce((s, w) => s + (w.amount || 0), 0)} جنيه\n`;
+            report += `إجمالي رأس المال الأصلي: ${cars.reduce((s, c) => s + (c.capital || 0), 0)} جنيه\n`;
+            report += `إجمالي الأرباح: ${workEarnings.reduce((s, w) => s + (w.amount || 0), 0)} جنيه\n`;
+            report += `إجمالي المصروفات: ${expenses.reduce((s, e) => s + (e.amount || 0), 0)} جنيه\n`;
             
             const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
@@ -1357,10 +1338,10 @@
         }
 
         // ==============================================
-        // بدء التشغيل
+        // بدء التشغيل مع التحديث اللحظي
         // ==============================================
         document.addEventListener('DOMContentLoaded', () => {
-            loadFromFirebase();
+            setupRealtimeUpdates();
             
             document.getElementById('searchInput').addEventListener('input', searchCars);
             
