@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>الشوقي ترافيل · النظام المتقدم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK (Compat version for simpler syntax) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
+        /* نفس الـ styles - مختصر لتوفير المساحة */
         * {
             margin: 0;
             padding: 0;
@@ -179,10 +180,6 @@
         }
         .quick-btn.work {
             background: linear-gradient(135deg, #00b09b, #96c93d);
-            color: white;
-        }
-        .quick-btn.danger {
-            background: linear-gradient(135deg, #c62828, #f44336);
             color: white;
         }
         .quick-btn:hover {
@@ -810,7 +807,7 @@
 
     <script>
         // ==============================================
-        // 🔥 تهيئة Firebase - بيانات مشروعك
+        // 🔥 تهيئة Firebase
         // ==============================================
         const firebaseConfig = {
             apiKey: "AIzaSyB9WZIZ3PUoeH6AokLtrIybsYdG2SxuLUk",
@@ -831,109 +828,111 @@
         // ==============================================
         let cars = [];
         let expenses = [];
-        let workEarnings = []; // مصفوفة جديدة للشغل (الأرباح)
+        let workEarnings = [];
         let currentFilter = 'all';
         let searchTerm = '';
+        let isLoading = false; // لمنع التحميل المتكرر
 
         // ==============================================
         // تحديث حالة الاتصال
         // ==============================================
-        function updateConnectionStatus(isConnected) {
+        function updateConnectionStatus(isConnected, message) {
             const statusDot = document.getElementById('statusDot');
             const connectionText = document.getElementById('connectionText');
             
             if (isConnected) {
                 statusDot.className = 'status-dot';
-                connectionText.innerText = 'متصل ومتزامن';
+                connectionText.innerText = message || 'متصل ومتزامن';
             } else {
                 statusDot.className = 'status-dot offline';
-                connectionText.innerText = 'غير متصل (حفظ محلي)';
+                connectionText.innerText = message || 'غير متصل (حفظ محلي)';
             }
         }
 
         // ==============================================
-        // تحميل البيانات من Firebase
+        // تحميل البيانات من Firebase (معدل لحل مشكلة الحذف)
         // ==============================================
         function loadFromFirebase() {
-            updateConnectionStatus(true);
+            if (isLoading) return;
+            isLoading = true;
             
-            // استماع للتغييرات في السيارات
+            updateConnectionStatus(true, 'جاري التحميل...');
+            
+            let loadedCount = 0;
+            const totalRefs = 3;
+
+            function checkAllLoaded() {
+                loadedCount++;
+                if (loadedCount === totalRefs) {
+                    isLoading = false;
+                    renderAll();
+                    updateConnectionStatus(true, 'تم التحميل');
+                }
+            }
+
+            // استماع للسيارات
             database.ref('cars').on('value', (snapshot) => {
                 try {
                     const data = snapshot.val();
                     if (data) {
                         cars = Object.keys(data).map(key => ({
-                            id: parseInt(key),
+                            id: key,
                             ...data[key]
                         }));
                     } else {
                         cars = [];
-                        saveAllToFirebase();
                     }
-                    renderAll();
                 } catch (error) {
-                    console.error('خطأ في معالجة بيانات السيارات:', error);
-                    showToast('خطأ في تحميل السيارات', 'error');
+                    console.error('خطأ في السيارات:', error);
                 }
-            }, (error) => {
-                console.error('خطأ في تحميل السيارات من Firebase:', error);
-                updateConnectionStatus(false);
-                loadFromLocalStorage();
+                checkAllLoaded();
             });
 
-            // استماع للتغييرات في المصروفات
+            // استماع للمصروفات
             database.ref('expenses').on('value', (snapshot) => {
                 try {
                     const data = snapshot.val();
                     if (data) {
                         expenses = Object.keys(data).map(key => ({
-                            id: parseInt(key),
+                            id: key,
                             ...data[key]
                         }));
                     } else {
                         expenses = [];
-                        saveAllToFirebase();
                     }
-                    renderAll();
                 } catch (error) {
-                    console.error('خطأ في معالجة بيانات المصروفات:', error);
-                    showToast('خطأ في تحميل المصروفات', 'error');
+                    console.error('خطأ في المصروفات:', error);
                 }
-            }, (error) => {
-                console.error('خطأ في تحميل المصروفات من Firebase:', error);
-                loadFromLocalStorage();
+                checkAllLoaded();
             });
 
-            // استماع للتغييرات في الأرباح (الشغل)
+            // استماع للأرباح
             database.ref('workEarnings').on('value', (snapshot) => {
                 try {
                     const data = snapshot.val();
                     if (data) {
                         workEarnings = Object.keys(data).map(key => ({
-                            id: parseInt(key),
+                            id: key,
                             ...data[key]
                         }));
                     } else {
                         workEarnings = [];
-                        saveAllToFirebase();
                     }
-                    renderAll();
                 } catch (error) {
-                    console.error('خطأ في معالجة بيانات الأرباح:', error);
-                    showToast('خطأ في تحميل الأرباح', 'error');
+                    console.error('خطأ في الأرباح:', error);
                 }
-            }, (error) => {
-                console.error('خطأ في تحميل الأرباح من Firebase:', error);
-                loadFromLocalStorage();
+                checkAllLoaded();
             });
         }
 
         // ==============================================
         // حفظ البيانات في Firebase
         // ==============================================
-        function saveAllToFirebase() {
+        async function saveAllToFirebase() {
             try {
-                // تحويل المصفوفة إلى كائن
+                updateConnectionStatus(true, 'جاري الحفظ...');
+                
+                // حفظ السيارات
                 const carsObject = {};
                 cars.forEach(car => {
                     carsObject[car.id] = {
@@ -944,6 +943,7 @@
                     };
                 });
                 
+                // حفظ المصروفات
                 const expensesObject = {};
                 expenses.forEach(exp => {
                     expensesObject[exp.id] = {
@@ -954,6 +954,7 @@
                     };
                 });
 
+                // حفظ الأرباح
                 const workObject = {};
                 workEarnings.forEach(work => {
                     workObject[work.id] = {
@@ -964,43 +965,24 @@
                     };
                 });
                 
-                // حفظ في Firebase
-                database.ref('cars').set(carsObject);
-                database.ref('expenses').set(expensesObject);
-                database.ref('workEarnings').set(workObject);
+                // حفظ الكل في Firebase
+                await Promise.all([
+                    database.ref('cars').set(carsObject),
+                    database.ref('expenses').set(expensesObject),
+                    database.ref('workEarnings').set(workObject)
+                ]);
                 
                 // حفظ نسخة محلية
-                localStorage.setItem('shawqi_cars_backup', JSON.stringify(cars));
-                localStorage.setItem('shawqi_expenses_backup', JSON.stringify(expenses));
-                localStorage.setItem('shawqi_work_backup', JSON.stringify(workEarnings));
+                localStorage.setItem('shawqi_backup', JSON.stringify({
+                    cars, expenses, workEarnings
+                }));
                 
-                updateConnectionStatus(true);
-                console.log('✅ تم حفظ البيانات في Firebase');
+                updateConnectionStatus(true, 'تم الحفظ');
+                console.log('✅ تم حفظ البيانات');
             } catch (error) {
-                console.error('❌ خطأ في حفظ البيانات:', error);
-                updateConnectionStatus(false);
+                console.error('❌ خطأ في الحفظ:', error);
+                updateConnectionStatus(false, 'فشل الحفظ');
                 showToast('خطأ في حفظ البيانات', 'error');
-            }
-        }
-
-        // ==============================================
-        // تحميل من localStorage
-        // ==============================================
-        function loadFromLocalStorage() {
-            try {
-                const savedCars = localStorage.getItem('shawqi_cars_backup');
-                const savedExpenses = localStorage.getItem('shawqi_expenses_backup');
-                const savedWork = localStorage.getItem('shawqi_work_backup');
-                
-                if (savedCars) cars = JSON.parse(savedCars);
-                if (savedExpenses) expenses = JSON.parse(savedExpenses);
-                if (savedWork) workEarnings = JSON.parse(savedWork);
-                
-                renderAll();
-                showToast('تم التحميل من النسخة المحلية', 'info');
-            } catch (error) {
-                console.error('خطأ في تحميل البيانات المحلية:', error);
-                showToast('خطأ في التحميل المحلي', 'error');
             }
         }
 
@@ -1008,11 +990,11 @@
         // دوال المساعدة
         // ==============================================
         function getCarExpenses(carId) {
-            return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + e.amount, 0);
+            return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
         }
 
         function getCarWorkEarnings(carId) {
-            return workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + w.amount, 0);
+            return workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
         }
 
         function getCarWorkEarningsList(carId) {
@@ -1023,13 +1005,6 @@
             return expenses.filter(e => e.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         }
 
-        function calculateCapitalPercentage(spent, total) {
-            return total > 0 ? Math.min((spent / total * 100), 100) : 0;
-        }
-
-        // ==============================================
-        // دوال التصفية والبحث
-        // ==============================================
         function filterCars(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -1044,24 +1019,18 @@
 
         function getFilteredCars() {
             let filtered = [...cars];
-            
             if (currentFilter !== 'all') {
                 filtered = filtered.filter(c => c.status === currentFilter);
             }
-            
             if (searchTerm) {
                 filtered = filtered.filter(c => 
-                    c.number.toLowerCase().includes(searchTerm) || 
-                    c.model.toLowerCase().includes(searchTerm)
+                    (c.number || '').toLowerCase().includes(searchTerm) || 
+                    (c.model || '').toLowerCase().includes(searchTerm)
                 );
             }
-            
             return filtered;
         }
 
-        // ==============================================
-        // دوال العرض
-        // ==============================================
         function renderAll() {
             renderCars();
             updateStats();
@@ -1078,7 +1047,7 @@
                 grid.innerHTML = `
                     <div style="grid-column:1/-1; text-align:center; padding:60px; background:white; border-radius:30px;">
                         <i class="fas fa-car" style="font-size:60px; color:#ccc; margin-bottom:20px;"></i>
-                        <h3 style="color:#666;">لا توجد سيارات مطابقة</h3>
+                        <h3 style="color:#666;">لا توجد سيارات</h3>
                     </div>
                 `;
                 return;
@@ -1089,8 +1058,7 @@
                 const work_list = getCarWorkEarningsList(car.id);
                 const totalExpenses = getCarExpenses(car.id);
                 const totalWork = getCarWorkEarnings(car.id);
-                const netCapital = car.capital + totalWork - totalExpenses;
-                const expensePercentage = calculateCapitalPercentage(totalExpenses, car.capital + totalWork);
+                const netCapital = (car.capital || 0) + totalWork - totalExpenses;
                 
                 return `
                 <div class="car-advanced-card" data-car-id="${car.id}">
@@ -1099,14 +1067,14 @@
                             <i class="fas fa-calendar"></i> ${new Date().getFullYear()}
                         </div>
                         <div class="car-number-large">
-                            ${car.number}
+                            ${car.number || 'بدون رقم'}
                         </div>
                     </div>
                     
                     <div class="car-content">
                         <div class="car-info-row">
-                            <span class="car-model">${car.model}</span>
-                            <span class="status-toggle ${car.status}" onclick="toggleCarStatus(${car.id})">
+                            <span class="car-model">${car.model || 'بدون موديل'}</span>
+                            <span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">
                                 ${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}
                             </span>
                         </div>
@@ -1114,7 +1082,7 @@
                         <div class="progress-stats">
                             <div class="progress-item">
                                 <div class="progress-label">رأس المال</div>
-                                <div class="progress-value">${car.capital.toLocaleString()} جنيه</div>
+                                <div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div>
                             </div>
                             <div class="progress-item">
                                 <div class="progress-label">المصروفات</div>
@@ -1122,24 +1090,19 @@
                             </div>
                         </div>
                         
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${expensePercentage}%"></div>
-                        </div>
-                        
-                        <!-- عرض الأرباح الأخيرة -->
                         ${work_list.length > 0 ? `
                         <div class="work-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                                 <span><i class="fas fa-briefcase"></i> آخر الأرباح</span>
-                                <span onclick="showAllWork(${car.id})" style="color:#00b09b; cursor:pointer;">عرض الكل</span>
+                                <span onclick="showAllWork('${car.id}')" style="color:#00b09b; cursor:pointer;">عرض الكل</span>
                             </div>
                             ${work_list.map(work => `
                                 <div class="work-item">
                                     <div>
                                         <div class="work-note">${work.note || 'شغل'}</div>
-                                        <small>${work.date}</small>
+                                        <small>${work.date || ''}</small>
                                     </div>
-                                    <div class="work-amount">+${work.amount.toLocaleString()} جنيه</div>
+                                    <div class="work-amount">+${(work.amount || 0).toLocaleString()} جنيه</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1148,35 +1111,35 @@
                         <div class="expenses-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                                 <span><i class="fas fa-history"></i> آخر المصروفات</span>
-                                <span onclick="showAllExpenses(${car.id})" style="color:#1e3c72; cursor:pointer;">عرض الكل</span>
+                                <span onclick="showAllExpenses('${car.id}')" style="color:#1e3c72; cursor:pointer;">عرض الكل</span>
                             </div>
                             
                             ${expenses_list.length > 0 ? expenses_list.map(exp => `
                                 <div class="expense-item">
                                     <div>
                                         <div class="expense-note">${exp.note || 'مصروف'}</div>
-                                        <small>${exp.date}</small>
+                                        <small>${exp.date || ''}</small>
                                     </div>
-                                    <div class="expense-amount">${exp.amount.toLocaleString()} جنيه</div>
+                                    <div class="expense-amount">${(exp.amount || 0).toLocaleString()} جنيه</div>
                                 </div>
                             `).join('') : `
                                 <div style="text-align:center; color:#999; padding:10px;">
-                                    لا توجد مصروفات مسجلة
+                                    لا توجد مصروفات
                                 </div>
                             `}
                         </div>
                         
                         <div class="net-profit" style="background:${netCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>💼 إجمالي الأرباح</span>
+                                <span>💼 الأرباح</span>
                                 <span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>🔧 إجمالي المصروفات</span>
+                                <span>🔧 المصروفات</span>
                                 <span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;">
-                                <span style="font-weight:bold;">الصافي الحالي</span>
+                                <span style="font-weight:bold;">الصافي</span>
                                 <span style="font-size:1.5rem; font-weight:bold; color:${netCapital >= 0 ? '#2e7d32' : '#c62828'};">
                                     ${netCapital.toLocaleString()} جنيه
                                 </span>
@@ -1184,16 +1147,16 @@
                         </div>
                         
                         <div class="car-controls">
-                            <button class="control-btn-small expense" onclick="quickExpense(${car.id})">
+                            <button class="control-btn-small expense" onclick="quickExpense('${car.id}')">
                                 <i class="fas fa-wrench"></i> مصروف
                             </button>
-                            <button class="control-btn-small capital" onclick="quickCapital(${car.id})">
+                            <button class="control-btn-small capital" onclick="quickCapital('${car.id}')">
                                 <i class="fas fa-coins"></i> رأس مال
                             </button>
-                            <button class="control-btn-small work" onclick="quickWork(${car.id})">
+                            <button class="control-btn-small work" onclick="quickWork('${car.id}')">
                                 <i class="fas fa-briefcase"></i> شغل
                             </button>
-                            <button class="control-btn-small delete" onclick="deleteCar(${car.id})">
+                            <button class="control-btn-small delete" onclick="deleteCar('${car.id}')">
                                 <i class="fas fa-trash"></i> حذف
                             </button>
                         </div>
@@ -1205,9 +1168,9 @@
 
         function updateStats() {
             const totalCars = cars.length;
-            const totalCapital = cars.reduce((sum, c) => sum + c.capital, 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-            const totalWork = workEarnings.reduce((sum, w) => sum + w.amount, 0);
+            const totalCapital = cars.reduce((sum, c) => sum + (c.capital || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+            const totalWork = workEarnings.reduce((sum, w) => sum + (w.amount || 0), 0);
             
             document.getElementById('statsTotalCars').innerText = totalCars;
             document.getElementById('statsTotalCapital').innerText = totalCapital.toLocaleString() + ' جنيه';
@@ -1217,12 +1180,15 @@
 
         function updateSelects() {
             const options = cars.map(c => 
-                `<option value="${c.id}">${c.number} - ${c.model}</option>`
+                `<option value="${c.id}">${c.number || 'بدون رقم'} - ${c.model || 'بدون موديل'}</option>`
             ).join('');
             
-            document.getElementById('expenseCar').innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
-            document.getElementById('capitalCar').innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
-            document.getElementById('workCar').innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
+            ['expenseCar', 'capitalCar', 'workCar'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
+                }
+            });
         }
 
         // ==============================================
@@ -1231,125 +1197,89 @@
         function addCar(e) {
             e.preventDefault();
             
-            try {
-                const newCar = {
-                    id: Date.now(),
-                    number: document.getElementById('carNumber').value,
-                    model: document.getElementById('carModel').value,
-                    capital: parseFloat(document.getElementById('carCapital').value),
-                    status: document.getElementById('carStatus').value
-                };
-                
-                cars.push(newCar);
-                saveAllToFirebase();
-                closeModal('carModal');
-                e.target.reset();
-                renderAll();
-                showToast('تم إضافة السيارة بنجاح', 'success');
-            } catch (error) {
-                console.error('خطأ في إضافة السيارة:', error);
-                showToast('حدث خطأ أثناء الإضافة', 'error');
-            }
+            const newCar = {
+                id: Date.now().toString(),
+                number: document.getElementById('carNumber').value,
+                model: document.getElementById('carModel').value,
+                capital: parseFloat(document.getElementById('carCapital').value) || 0,
+                status: document.getElementById('carStatus').value
+            };
+            
+            cars.push(newCar);
+            saveAllToFirebase();
+            closeModal('carModal');
+            e.target.reset();
+            showToast('تم إضافة السيارة', 'success');
         }
 
         function toggleCarStatus(id) {
-            try {
-                const car = cars.find(c => c.id === id);
-                if (car) {
-                    car.status = car.status === 'working' ? 'repair' : 'working';
-                    saveAllToFirebase();
-                    renderAll();
-                    showToast('تم تغيير الحالة', 'success');
-                }
-            } catch (error) {
-                console.error('خطأ في تغيير الحالة:', error);
-                showToast('حدث خطأ', 'error');
+            const car = cars.find(c => c.id === id);
+            if (car) {
+                car.status = car.status === 'working' ? 'repair' : 'working';
+                saveAllToFirebase();
+                showToast('تم تغيير الحالة', 'success');
             }
         }
 
         function addExpense(e) {
             e.preventDefault();
             
-            try {
-                const newExpense = {
-                    id: Date.now(),
-                    carId: parseInt(document.getElementById('expenseCar').value),
-                    amount: parseFloat(document.getElementById('expenseAmount').value),
-                    date: document.getElementById('expenseDate').value,
-                    note: document.getElementById('expenseNote').value || 'مصروف'
-                };
-                
-                expenses.push(newExpense);
-                saveAllToFirebase();
-                closeModal('expenseModal');
-                e.target.reset();
-                renderAll();
-                showToast('تم تسجيل المصروف', 'success');
-            } catch (error) {
-                console.error('خطأ في إضافة المصروف:', error);
-                showToast('حدث خطأ', 'error');
-            }
+            const newExpense = {
+                id: Date.now().toString(),
+                carId: document.getElementById('expenseCar').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value) || 0,
+                date: document.getElementById('expenseDate').value,
+                note: document.getElementById('expenseNote').value || 'مصروف'
+            };
+            
+            expenses.push(newExpense);
+            saveAllToFirebase();
+            closeModal('expenseModal');
+            e.target.reset();
+            showToast('تم تسجيل المصروف', 'success');
         }
 
         function addCapital(e) {
             e.preventDefault();
             
-            try {
-                const carId = parseInt(document.getElementById('capitalCar').value);
-                const amount = parseFloat(document.getElementById('capitalAmount').value);
-                
-                const car = cars.find(c => c.id === carId);
-                if (car) {
-                    car.capital += amount;
-                    saveAllToFirebase();
-                    closeModal('capitalModal');
-                    e.target.reset();
-                    renderAll();
-                    showToast('تم إضافة رأس المال', 'success');
-                }
-            } catch (error) {
-                console.error('خطأ في إضافة رأس المال:', error);
-                showToast('حدث خطأ', 'error');
+            const carId = document.getElementById('capitalCar').value;
+            const amount = parseFloat(document.getElementById('capitalAmount').value) || 0;
+            
+            const car = cars.find(c => c.id === carId);
+            if (car) {
+                car.capital = (car.capital || 0) + amount;
+                saveAllToFirebase();
+                closeModal('capitalModal');
+                e.target.reset();
+                showToast('تم إضافة رأس المال', 'success');
             }
         }
 
         function addWorkEarning(e) {
             e.preventDefault();
             
-            try {
-                const newWork = {
-                    id: Date.now(),
-                    carId: parseInt(document.getElementById('workCar').value),
-                    amount: parseFloat(document.getElementById('workAmount').value),
-                    date: document.getElementById('workDate').value,
-                    note: document.getElementById('workNote').value || 'شغل'
-                };
-                
-                workEarnings.push(newWork);
-                saveAllToFirebase();
-                closeModal('workModal');
-                e.target.reset();
-                renderAll();
-                showToast('تم تسجيل الأرباح', 'success');
-            } catch (error) {
-                console.error('خطأ في إضافة الأرباح:', error);
-                showToast('حدث خطأ', 'error');
-            }
+            const newWork = {
+                id: Date.now().toString(),
+                carId: document.getElementById('workCar').value,
+                amount: parseFloat(document.getElementById('workAmount').value) || 0,
+                date: document.getElementById('workDate').value,
+                note: document.getElementById('workNote').value || 'شغل'
+            };
+            
+            workEarnings.push(newWork);
+            saveAllToFirebase();
+            closeModal('workModal');
+            e.target.reset();
+            showToast('تم تسجيل الأرباح', 'success');
         }
 
         function deleteCar(id) {
-            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة وجميع مصروفاتها وأرباحها؟')) {
-                try {
-                    cars = cars.filter(c => c.id !== id);
-                    expenses = expenses.filter(e => e.carId !== id);
-                    workEarnings = workEarnings.filter(w => w.carId !== id);
-                    saveAllToFirebase();
-                    renderAll();
-                    showToast('تم حذف السيارة', 'warning');
-                } catch (error) {
-                    console.error('خطأ في حذف السيارة:', error);
-                    showToast('حدث خطأ', 'error');
-                }
+            if (confirm('⚠️ هل أنت متأكد من الحذف؟')) {
+                cars = cars.filter(c => c.id !== id);
+                expenses = expenses.filter(e => e.carId !== id);
+                workEarnings = workEarnings.filter(w => w.carId !== id);
+                saveAllToFirebase();
+                showToast('تم الحذف', 'warning');
             }
         }
 
@@ -1378,95 +1308,38 @@
         }
 
         function showAllExpenses(carId) {
-            try {
-                const car = cars.find(c => c.id === carId);
-                const carExpenses = expenses.filter(e => e.carId === carId)
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                let message = `📋 مصروفات السيارة ${car?.number}:\n\n`;
-                carExpenses.forEach(exp => {
-                    message += `📅 ${exp.date}\n💰 ${exp.amount.toLocaleString()} جنيه\n📝 ${exp.note || 'بدون ملاحظات'}\n${'-'.repeat(20)}\n`;
-                });
-                
-                if (carExpenses.length === 0) {
-                    message += 'لا توجد مصروفات مسجلة لهذه السيارة';
-                }
-                
-                alert(message);
-            } catch (error) {
-                console.error('خطأ في عرض المصروفات:', error);
-                showToast('حدث خطأ', 'error');
-            }
+            const car = cars.find(c => c.id === carId);
+            const carExpenses = expenses.filter(e => e.carId === carId);
+            let message = `📋 مصروفات ${car?.number || 'السيارة'}:\n\n`;
+            carExpenses.forEach(e => message += `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}\n\n`);
+            alert(message);
         }
 
         function showAllWork(carId) {
-            try {
-                const car = cars.find(c => c.id === carId);
-                const carWork = workEarnings.filter(w => w.carId === carId)
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                let message = `💼 أرباح السيارة ${car?.number}:\n\n`;
-                carWork.forEach(work => {
-                    message += `📅 ${work.date}\n💰 ${work.amount.toLocaleString()} جنيه\n📝 ${work.note || 'بدون ملاحظات'}\n${'-'.repeat(20)}\n`;
-                });
-                
-                if (carWork.length === 0) {
-                    message += 'لا توجد أرباح مسجلة لهذه السيارة';
-                }
-                
-                alert(message);
-            } catch (error) {
-                console.error('خطأ في عرض الأرباح:', error);
-                showToast('حدث خطأ', 'error');
-            }
+            const car = cars.find(c => c.id === carId);
+            const carWork = workEarnings.filter(w => w.carId === carId);
+            let message = `💰 أرباح ${car?.number || 'السيارة'}:\n\n`;
+            carWork.forEach(w => message += `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}\n\n`);
+            alert(message);
         }
 
-        // ==============================================
-        // دوال التصدير
-        // ==============================================
         function exportData() {
-            try {
-                let report = 'تقرير الشوقي ترافيل\n';
-                report += '='.repeat(50) + '\n\n';
-                report += `تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}\n\n`;
-                
-                report += '📊 إحصائيات عامة\n';
-                report += '-'.repeat(30) + '\n';
-                report += `عدد السيارات: ${cars.length}\n`;
-                report += `إجمالي رأس المال: ${cars.reduce((s, c) => s + c.capital, 0).toLocaleString()} جنيه\n`;
-                report += `إجمالي المصروفات: ${expenses.reduce((s, e) => s + e.amount, 0).toLocaleString()} جنيه\n`;
-                report += `إجمالي الأرباح: ${workEarnings.reduce((s, w) => s + w.amount, 0).toLocaleString()} جنيه\n\n`;
-                
-                report += '🚗 تفاصيل السيارات\n';
-                report += '-'.repeat(30) + '\n';
-                
-                cars.forEach(car => {
-                    const carExpenses = getCarExpenses(car.id);
-                    const carWork = getCarWorkEarnings(car.id);
-                    report += `\nالسيارة: ${car.number} - ${car.model}\n`;
-                    report += `الحالة: ${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}\n`;
-                    report += `رأس المال: ${car.capital.toLocaleString()} جنيه\n`;
-                    report += `إجمالي الأرباح: +${carWork.toLocaleString()} جنيه\n`;
-                    report += `إجمالي المصروفات: -${carExpenses.toLocaleString()} جنيه\n`;
-                    report += `الصافي: ${(car.capital + carWork - carExpenses).toLocaleString()} جنيه\n`;
-                });
-                
-                const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `shawqi-report-${new Date().toISOString().split('T')[0]}.txt`;
-                link.click();
-                
-                showToast('تم تصدير التقرير بنجاح', 'success');
-            } catch (error) {
-                console.error('خطأ في تصدير التقرير:', error);
-                showToast('حدث خطأ في التصدير', 'error');
-            }
+            let report = `📊 تقرير الشوقي ترافيل\n`;
+            report += `📅 ${new Date().toLocaleDateString('ar-EG')}\n`;
+            report += `═`.repeat(40) + '\n\n';
+            report += `عدد السيارات: ${cars.length}\n`;
+            report += `رأس المال: ${cars.reduce((s, c) => s + (c.capital || 0), 0)} جنيه\n`;
+            report += `المصروفات: ${expenses.reduce((s, e) => s + (e.amount || 0), 0)} جنيه\n`;
+            report += `الأرباح: ${workEarnings.reduce((s, w) => s + (w.amount || 0), 0)} جنيه\n`;
+            
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `shawqi-report-${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            showToast('تم التصدير', 'success');
         }
 
-        // ==============================================
-        // دوال المساعدة العامة
-        // ==============================================
         function openModal(id) {
             document.getElementById(id).classList.add('active');
         }
@@ -1476,45 +1349,26 @@
         }
 
         function showToast(message, type = 'info') {
-            try {
-                const toast = document.createElement('div');
-                toast.className = 'toast-message';
-                toast.innerHTML = `
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}" 
-                       style="color:${type === 'success' ? '#4caf50' : type === 'warning' ? '#ff9800' : '#2196f3'};"></i>
-                    <span>${message}</span>
-                `;
-                
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            } catch (error) {
-                console.error('خطأ في عرض الإشعار:', error);
-            }
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // ==============================================
-        // التهيئة - تشغيل عند تحميل الصفحة
+        // بدء التشغيل
         // ==============================================
         document.addEventListener('DOMContentLoaded', () => {
-            try {
-                loadFromFirebase();
-                
-                document.getElementById('searchInput').addEventListener('input', searchCars);
-                
-                document.querySelectorAll('.modal-advanced').forEach(modal => {
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.classList.remove('active');
-                        }
-                    });
+            loadFromFirebase();
+            
+            document.getElementById('searchInput').addEventListener('input', searchCars);
+            
+            document.querySelectorAll('.modal-advanced').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('active');
                 });
-            } catch (error) {
-                console.error('خطأ في بدء التشغيل:', error);
-                showToast('حدث خطأ في بدء التشغيل', 'error');
-            }
+            });
         });
     </script>
 </body>
