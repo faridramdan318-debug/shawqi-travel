@@ -649,6 +649,9 @@
             <button class="quick-btn" onclick="exportData()">
                 <i class="fas fa-download"></i> تصدير تقرير
             </button>
+            <button class="quick-btn danger" onclick="resetAllData()" style="background: linear-gradient(135deg, #c62828, #f44336);">
+                <i class="fas fa-trash-alt"></i> تصفير الكل
+            </button>
         </div>
 
         <!-- البحث والتصفية -->
@@ -831,7 +834,6 @@
         let workEarnings = [];
         let currentFilter = 'all';
         let searchTerm = '';
-        let isLoading = false;
 
         // ==============================================
         // تحديث حالة الاتصال
@@ -911,23 +913,6 @@
                     console.error('خطأ في الأرباح:', error);
                 }
             });
-        }
-
-        // ==============================================
-        // حفظ البيانات في Firebase
-        // ==============================================
-        async function saveToFirebase(path, data) {
-            try {
-                updateConnectionStatus(true, 'جاري الحفظ...');
-                await database.ref(path).set(data);
-                updateConnectionStatus(true, 'تم الحفظ');
-                return true;
-            } catch (error) {
-                console.error('❌ خطأ في الحفظ:', error);
-                updateConnectionStatus(false, 'فشل الحفظ');
-                showToast('خطأ في حفظ البيانات', 'error');
-                return false;
-            }
         }
 
         // ==============================================
@@ -1158,7 +1143,7 @@
         }
 
         // ==============================================
-        // العمليات الرئيسية - حفظ تلقائي في Firebase
+        // العمليات الرئيسية
         // ==============================================
         function addCar(e) {
             e.preventDefault();
@@ -1171,7 +1156,6 @@
                 status: document.getElementById('carStatus').value
             };
             
-            // حفظ مباشر في Firebase
             database.ref('cars/' + newCar.id).set({
                 number: newCar.number,
                 model: newCar.model,
@@ -1222,7 +1206,6 @@
             const carId = document.getElementById('capitalCar').value;
             const amount = parseFloat(document.getElementById('capitalAmount').value) || 0;
             
-            // تحديث رأس المال مباشرة
             const car = cars.find(c => c.id === carId);
             if (car) {
                 const newCapital = (car.capital || 0) + amount;
@@ -1257,10 +1240,47 @@
             showToast('تم تسجيل الأرباح', 'success');
         }
 
+        // ==============================================
+        // دالة حذف السيارة مع كل العمليات المرتبطة بها (المهمة)
+        // ==============================================
         function deleteCar(id) {
-            if (confirm('⚠️ هل أنت متأكد من الحذف؟')) {
+            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة؟ سيتم حذف جميع مصروفاتها وأرباحها نهائياً!')) {
+                
+                // حذف السيارة
                 database.ref('cars/' + id).remove();
-                showToast('تم حذف السيارة', 'warning');
+                
+                // حذف جميع المصروفات المرتبطة بهذه السيارة
+                const expensesToDelete = expenses.filter(e => e.carId === id);
+                expensesToDelete.forEach(expense => {
+                    database.ref('expenses/' + expense.id).remove();
+                });
+                
+                // حذف جميع الأرباح المرتبطة بهذه السيارة
+                const workToDelete = workEarnings.filter(w => w.carId === id);
+                workToDelete.forEach(work => {
+                    database.ref('workEarnings/' + work.id).remove();
+                });
+                
+                showToast('تم حذف السيارة وجميع عملياتها', 'warning');
+            }
+        }
+
+        // ==============================================
+        // دالة تصفير كل البيانات (حذف كل شيء)
+        // ==============================================
+        function resetAllData() {
+            if (confirm('⚠️ هل أنت متأكد من تصفير كل البيانات؟ سيتم حذف جميع السيارات والمصروفات والأرباح نهائياً!')) {
+                
+                // حذف كل السيارات
+                database.ref('cars').remove();
+                
+                // حذف كل المصروفات
+                database.ref('expenses').remove();
+                
+                // حذف كل الأرباح
+                database.ref('workEarnings').remove();
+                
+                showToast('تم تصفير كل البيانات', 'warning');
             }
         }
 
@@ -1292,7 +1312,11 @@
             const car = cars.find(c => c.id === carId);
             const carExpenses = expenses.filter(e => e.carId === carId);
             let message = `📋 مصروفات ${car?.number || 'السيارة'}:\n\n`;
-            carExpenses.forEach(e => message += `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}\n\n`);
+            if (carExpenses.length === 0) {
+                message += 'لا توجد مصروفات';
+            } else {
+                carExpenses.forEach(e => message += `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}\n\n`);
+            }
             alert(message);
         }
 
@@ -1300,7 +1324,11 @@
             const car = cars.find(c => c.id === carId);
             const carWork = workEarnings.filter(w => w.carId === carId);
             let message = `💰 أرباح ${car?.number || 'السيارة'}:\n\n`;
-            carWork.forEach(w => message += `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}\n\n`);
+            if (carWork.length === 0) {
+                message += 'لا توجد أرباح';
+            } else {
+                carWork.forEach(w => message += `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}\n\n`);
+            }
             alert(message);
         }
 
