@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>الشوقي ترافيل · النظام المتقدم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK (Compat version for simpler syntax) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -574,7 +571,7 @@
 </head>
 <body>
     <div class="top-bar">
-        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · متصل بـ Firebase
+        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · متصل بـ GitHub Storage
     </div>
 
     <div class="container">
@@ -810,176 +807,152 @@
 
     <script>
         // ==============================================
-        // 🔥 تهيئة Firebase - بيانات مشروعك
+        // 🔥 إعدادات JSONBin.io (تخزين GitHub)
         // ==============================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyB9WZIZ3PUoeH6AokLtrIybsYdG2SxuLUk",
-            authDomain: "shawqi-travel.firebaseapp.com",
-            databaseURL: "https://shawqi-travel-default-rtdb.firebaseio.com",
-            projectId: "shawqi-travel",
-            storageBucket: "shawqi-travel.firebasestorage.app",
-            messagingSenderId: "173120244840",
-            appId: "1:173120244840:web:8968e4adc4f92a1e2a3fdd"
+        // سجل في https://jsonbin.io/ واحصل على هذه المفاتيح
+        const JSONBIN_API_KEY = 'YOUR_SECRET_KEY_HERE'; // المفتاح السري من jsonbin.io
+        const BIN_IDS = {
+            cars: 'YOUR_CARS_BIN_ID',      // أنشئ bin للسيارات وضع id هنا
+            expenses: 'YOUR_EXPENSES_BIN_ID', // أنشئ bin للمصروفات
+            work: 'YOUR_WORK_BIN_ID'       // أنشئ bin للأرباح
         };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
 
         // ==============================================
         // المتغيرات العامة
         // ==============================================
         let cars = [];
         let expenses = [];
-        let workEarnings = []; // مصفوفة جديدة لتسجيل الشغل
+        let workEarnings = [];
         let currentFilter = 'all';
         let searchTerm = '';
 
         // ==============================================
         // تحديث حالة الاتصال
         // ==============================================
-        function updateConnectionStatus(isConnected) {
+        function updateConnectionStatus(isConnected, message = '') {
             const statusDot = document.getElementById('statusDot');
             const connectionText = document.getElementById('connectionText');
             
             if (isConnected) {
                 statusDot.className = 'status-dot';
-                connectionText.innerText = 'متصل ومتزامن';
+                connectionText.innerText = message || 'متصل بـ GitHub Storage';
             } else {
                 statusDot.className = 'status-dot offline';
-                connectionText.innerText = 'غير متصل (حفظ محلي)';
+                connectionText.innerText = message || 'غير متصل (حفظ محلي)';
             }
         }
 
         // ==============================================
-        // تحميل البيانات من Firebase
+        // حفظ البيانات في JSONBin.io
         // ==============================================
-        function loadFromFirebase() {
-            updateConnectionStatus(true);
-            
-            // استماع للتغييرات في السيارات
-            database.ref('cars').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        cars = Object.keys(data).map(key => ({
-                            id: parseInt(key),
-                            ...data[key]
-                        }));
-                    } else {
-                        cars = [];
-                        saveAllToFirebase();
-                    }
-                    renderAll();
-                } catch (error) {
-                    console.error('خطأ في معالجة بيانات السيارات:', error);
-                    showToast('خطأ في تحميل السيارات', 'error');
-                }
-            }, (error) => {
-                console.error('خطأ في تحميل السيارات من Firebase:', error);
-                updateConnectionStatus(false);
-                loadFromLocalStorage();
-            });
-
-            // استماع للتغييرات في المصروفات
-            database.ref('expenses').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        expenses = Object.keys(data).map(key => ({
-                            id: parseInt(key),
-                            ...data[key]
-                        }));
-                    } else {
-                        expenses = [];
-                        saveAllToFirebase();
-                    }
-                    renderAll();
-                } catch (error) {
-                    console.error('خطأ في معالجة بيانات المصروفات:', error);
-                    showToast('خطأ في تحميل المصروفات', 'error');
-                }
-            }, (error) => {
-                console.error('خطأ في تحميل المصروفات من Firebase:', error);
-                loadFromLocalStorage();
-            });
-
-            // استماع للتغييرات في الشغل
-            database.ref('workEarnings').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        workEarnings = Object.keys(data).map(key => ({
-                            id: parseInt(key),
-                            ...data[key]
-                        }));
-                    } else {
-                        workEarnings = [];
-                        saveAllToFirebase();
-                    }
-                    renderAll();
-                } catch (error) {
-                    console.error('خطأ في معالجة بيانات الشغل:', error);
-                    showToast('خطأ في تحميل الأرباح', 'error');
-                }
-            }, (error) => {
-                console.error('خطأ في تحميل الشغل من Firebase:', error);
-                loadFromLocalStorage();
-            });
-        }
-
-        // ==============================================
-        // حفظ البيانات في Firebase
-        // ==============================================
-        function saveAllToFirebase() {
+        async function saveToJSONBin(binId, data) {
             try {
-                // تحويل المصفوفات إلى كائنات
-                const carsObject = {};
-                cars.forEach(car => {
-                    carsObject[car.id] = {
-                        number: car.number,
-                        model: car.model,
-                        capital: car.capital,
-                        status: car.status
-                    };
-                });
+                updateConnectionStatus(true, 'جاري الحفظ...');
                 
-                const expensesObject = {};
-                expenses.forEach(exp => {
-                    expensesObject[exp.id] = {
-                        carId: exp.carId,
-                        amount: exp.amount,
-                        date: exp.date,
-                        note: exp.note
-                    };
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(data)
                 });
 
-                const workObject = {};
-                workEarnings.forEach(work => {
-                    workObject[work.id] = {
-                        carId: work.carId,
-                        amount: work.amount,
-                        date: work.date,
-                        note: work.note
-                    };
-                });
-                
-                // حفظ في Firebase
-                database.ref('cars').set(carsObject);
-                database.ref('expenses').set(expensesObject);
-                database.ref('workEarnings').set(workObject);
-                
-                // حفظ نسخة محلية
+                if (!response.ok) {
+                    throw new Error('فشل الحفظ في JSONBin');
+                }
+
+                // حفظ نسخة احتياطية محلية
                 localStorage.setItem('shawqi_cars_backup', JSON.stringify(cars));
                 localStorage.setItem('shawqi_expenses_backup', JSON.stringify(expenses));
                 localStorage.setItem('shawqi_work_backup', JSON.stringify(workEarnings));
                 
-                updateConnectionStatus(true);
-                console.log('✅ تم حفظ البيانات في Firebase');
+                updateConnectionStatus(true, 'تم الحفظ في GitHub');
+                console.log('✅ تم حفظ البيانات في JSONBin.io');
+                return true;
             } catch (error) {
                 console.error('❌ خطأ في حفظ البيانات:', error);
-                updateConnectionStatus(false);
-                showToast('خطأ في حفظ البيانات', 'error');
+                updateConnectionStatus(false, 'حفظ محلي فقط');
+                
+                // حفظ محلي في حالة فشل الاتصال
+                localStorage.setItem('shawqi_cars_backup', JSON.stringify(cars));
+                localStorage.setItem('shawqi_expenses_backup', JSON.stringify(expenses));
+                localStorage.setItem('shawqi_work_backup', JSON.stringify(workEarnings));
+                
+                return false;
+            }
+        }
+
+        // ==============================================
+        // تحميل البيانات من JSONBin.io
+        // ==============================================
+        async function loadFromJSONBin(binId) {
+            try {
+                updateConnectionStatus(true, 'جاري التحميل...');
+                
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_API_KEY
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('فشل التحميل من JSONBin');
+                }
+
+                const data = await response.json();
+                updateConnectionStatus(true, 'تم التحميل من GitHub');
+                return data.record;
+            } catch (error) {
+                console.error('❌ خطأ في تحميل البيانات:', error);
+                updateConnectionStatus(false, 'تحميل محلي');
+                return null;
+            }
+        }
+
+        // ==============================================
+        // تحميل جميع البيانات
+        // ==============================================
+        async function loadAllData() {
+            try {
+                // محاولة التحميل من JSONBin
+                const [carsData, expensesData, workData] = await Promise.all([
+                    loadFromJSONBin(BIN_IDS.cars),
+                    loadFromJSONBin(BIN_IDS.expenses),
+                    loadFromJSONBin(BIN_IDS.work)
+                ]);
+
+                if (carsData) cars = carsData;
+                if (expensesData) expenses = expensesData;
+                if (workData) workEarnings = workData;
+
+                // إذا لم تكن هناك بيانات، حاول التحميل من المحلي
+                if (!carsData || !expensesData || !workData) {
+                    loadFromLocalStorage();
+                }
+
+                renderAll();
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                loadFromLocalStorage();
+            }
+        }
+
+        // ==============================================
+        // حفظ جميع البيانات
+        // ==============================================
+        async function saveAllData() {
+            try {
+                await Promise.all([
+                    saveToJSONBin(BIN_IDS.cars, cars),
+                    saveToJSONBin(BIN_IDS.expenses, expenses),
+                    saveToJSONBin(BIN_IDS.work, workEarnings)
+                ]);
+                
+                showToast('تم حفظ البيانات في GitHub', 'success');
+            } catch (error) {
+                console.error('خطأ في حفظ البيانات:', error);
+                showToast('تم الحفظ محلياً فقط', 'warning');
             }
         }
 
@@ -1134,7 +1107,6 @@
                             <div class="progress-fill" style="width: ${expensePercentage}%"></div>
                         </div>
                         
-                        <!-- عرض الأرباح الأخيرة -->
                         ${work_list.length > 0 ? `
                         <div class="work-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1153,7 +1125,6 @@
                         </div>
                         ` : ''}
                         
-                        <!-- عرض المصروفات الأخيرة -->
                         <div class="expenses-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                                 <span><i class="fas fa-history"></i> آخر المصروفات</span>
@@ -1175,7 +1146,6 @@
                             `}
                         </div>
                         
-                        <!-- عرض صافي رأس المال مع تفاصيل الشغل -->
                         <div class="net-profit" style="background:#f8f9fa; padding:15px; border-radius:15px; margin:15px 0;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                                 <span>💼 إجمالي الأرباح</span>
@@ -1251,7 +1221,7 @@
                 };
                 
                 cars.push(newCar);
-                saveAllToFirebase();
+                saveAllData();
                 closeModal('carModal');
                 e.target.reset();
                 renderAll();
@@ -1267,7 +1237,7 @@
                 const car = cars.find(c => c.id === id);
                 if (car) {
                     car.status = car.status === 'working' ? 'repair' : 'working';
-                    saveAllToFirebase();
+                    saveAllData();
                     renderAll();
                     showToast('تم تغيير الحالة', 'success');
                 }
@@ -1290,7 +1260,7 @@
                 };
                 
                 expenses.push(newExpense);
-                saveAllToFirebase();
+                saveAllData();
                 closeModal('expenseModal');
                 e.target.reset();
                 renderAll();
@@ -1311,7 +1281,7 @@
                 const car = cars.find(c => c.id === carId);
                 if (car) {
                     car.capital += amount;
-                    saveAllToFirebase();
+                    saveAllData();
                     closeModal('capitalModal');
                     e.target.reset();
                     renderAll();
@@ -1336,7 +1306,7 @@
                 };
                 
                 workEarnings.push(newWork);
-                saveAllToFirebase();
+                saveAllData();
                 closeModal('workModal');
                 e.target.reset();
                 renderAll();
@@ -1353,7 +1323,7 @@
                     cars = cars.filter(c => c.id !== id);
                     expenses = expenses.filter(e => e.carId !== id);
                     workEarnings = workEarnings.filter(w => w.carId !== id);
-                    saveAllToFirebase();
+                    saveAllData();
                     renderAll();
                     showToast('تم حذف السيارة', 'warning');
                 } catch (error) {
@@ -1512,7 +1482,7 @@
         // ==============================================
         document.addEventListener('DOMContentLoaded', () => {
             try {
-                loadFromFirebase();
+                loadAllData();
                 
                 document.getElementById('searchInput').addEventListener('input', searchCars);
                 
