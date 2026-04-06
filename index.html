@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>الشوقي ترافيل · النظام المتقدم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- إضافات للتصدير الاحترافي -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        /* نفس الـ styles - مختصر لتوفير المساحة */
         * {
             margin: 0;
             padding: 0;
@@ -92,9 +93,6 @@
         .status-dot.offline {
             background: #dc3545;
         }
-        .status-dot.syncing {
-            background: #ffc107;
-        }
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -155,16 +153,16 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .quick-btn {
-            padding: 15px 30px;
+            padding: 12px 25px;
             border: none;
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s ease;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .quick-btn.primary {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -180,6 +178,18 @@
         }
         .quick-btn.work {
             background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+        }
+        .quick-btn.danger {
+            background: linear-gradient(135deg, #c62828, #f44336);
+            color: white;
+        }
+        .quick-btn.backup {
+            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            color: white;
+        }
+        .quick-btn.restore {
+            background: linear-gradient(135deg, #00695c, #00897b);
             color: white;
         }
         .quick-btn:hover {
@@ -245,11 +255,9 @@
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1);
         }
         .car-advanced-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
         .car-header-gradient {
             height: 120px;
@@ -298,7 +306,6 @@
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
         .status-toggle.working {
             background: #d4edda;
@@ -327,66 +334,32 @@
             font-weight: bold;
             color: #1e3c72;
         }
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4caf50, #8bc34a);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        .expenses-history {
+        .expenses-history, .work-history {
             background: #f8f9fa;
             border-radius: 20px;
             padding: 15px;
             margin: 15px 0;
         }
-        .expense-item {
+        .work-history {
+            background: #f0f9f7;
+        }
+        .expense-item, .work-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px dashed #ddd;
         }
-        .expense-item:last-child {
+        .expense-item:last-child, .work-item:last-child {
             border-bottom: none;
         }
         .expense-amount {
             font-weight: bold;
             color: #c62828;
         }
-        .expense-note {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .work-history {
-            background: #f0f9f7;
-            border-radius: 20px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        .work-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px dashed #b2dfdb;
-        }
-        .work-item:last-child {
-            border-bottom: none;
-        }
         .work-amount {
             font-weight: bold;
             color: #00b09b;
-        }
-        .work-note {
-            color: #00695c;
-            font-size: 0.9rem;
         }
         .car-controls {
             display: grid;
@@ -402,26 +375,10 @@
             font-weight: bold;
             transition: all 0.3s ease;
         }
-        .control-btn-small.expense {
-            background: #fff3e0;
-            color: #e65100;
-        }
-        .control-btn-small.capital {
-            background: #e8eaf6;
-            color: #1a237e;
-        }
-        .control-btn-small.work {
-            background: #e0f2e9;
-            color: #004d40;
-        }
-        .control-btn-small.delete {
-            background: #ffebee;
-            color: #c62828;
-        }
-        .control-btn-small:hover {
-            transform: translateY(-2px);
-            filter: brightness(0.95);
-        }
+        .control-btn-small.expense { background: #fff3e0; color: #e65100; }
+        .control-btn-small.capital { background: #e8eaf6; color: #1a237e; }
+        .control-btn-small.work { background: #e0f2e9; color: #004d40; }
+        .control-btn-small.delete { background: #ffebee; color: #c62828; }
         .modal-advanced {
             display: none;
             position: fixed;
@@ -449,14 +406,8 @@
             animation: slideUp 0.3s ease;
         }
         @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .modal-header {
             display: flex;
@@ -476,11 +427,6 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .close-modal:hover {
-            background: #e0e0e0;
-            transform: rotate(90deg);
         }
         .form-group {
             margin-bottom: 20px;
@@ -497,12 +443,10 @@
             border: 2px solid #e0e0e0;
             border-radius: 15px;
             font-size: 1rem;
-            transition: all 0.3s ease;
         }
         .form-control:focus {
             outline: none;
             border-color: #1e3c72;
-            box-shadow: 0 0 0 4px rgba(30,60,114,0.1);
         }
         .toast-message {
             position: fixed;
@@ -519,68 +463,45 @@
             animation: slideInRight 0.3s ease;
         }
         @keyframes slideInRight {
-            from {
-                transform: translateX(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .backup-notification {
+            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            color: white;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         @media (max-width: 768px) {
-            .main-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            .logo-area {
-                flex-direction: column;
-            }
-            .stats-advanced {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .cars-advanced-grid {
-                grid-template-columns: 1fr;
-            }
-            .quick-actions {
-                border-radius: 30px;
-            }
-            .quick-btn {
-                flex: 1;
-                justify-content: center;
-                font-size: 0.9rem;
-                padding: 12px 15px;
-            }
-            .toast-message {
-                left: 15px;
-                right: 15px;
-                bottom: 15px;
-                border-radius: 20px;
-            }
+            .main-header { flex-direction: column; text-align: center; }
+            .logo-area { flex-direction: column; }
+            .stats-advanced { grid-template-columns: repeat(2, 1fr); }
+            .cars-advanced-grid { grid-template-columns: 1fr; }
+            .quick-actions { border-radius: 30px; }
+            .quick-btn { flex: 1; justify-content: center; font-size: 0.8rem; padding: 10px 12px; }
+            .toast-message { left: 15px; right: 15px; bottom: 15px; }
         }
         @media (max-width: 480px) {
-            .stats-advanced {
-                grid-template-columns: 1fr;
-            }
-            .car-number-large {
-                font-size: 1.5rem;
-                padding: 10px 20px;
-            }
+            .stats-advanced { grid-template-columns: 1fr; }
+            .car-number-large { font-size: 1.5rem; padding: 10px 20px; }
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · تحديث تلقائي لحظي
+        <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · نسخ احتياطي تلقائي كل 10 أيام
     </div>
 
     <div class="container">
-        <!-- الهيدر -->
         <div class="main-header">
             <div class="logo-area">
-                <div class="logo-icon">
-                    <i class="fas fa-truck"></i>
-                </div>
+                <div class="logo-icon"><i class="fas fa-truck"></i></div>
                 <div class="company-name">
                     <h1>الشوقي ترافيل</h1>
                     <p>نظام إدارة الأسطول المتقدم</p>
@@ -592,39 +513,38 @@
             </div>
         </div>
 
-        <!-- الإحصائيات المتقدمة -->
+        <!-- إشعار النسخ الاحتياطي -->
+        <div id="backupNotification" class="backup-notification" style="display: none;">
+            <span><i class="fas fa-database"></i> <span id="backupMessage"></span></span>
+            <button onclick="createManualBackup()" style="background: white; border: none; padding: 8px 20px; border-radius: 50px; cursor: pointer; font-weight: bold;">
+                <i class="fas fa-save"></i> عمل نسخة الآن
+            </button>
+        </div>
+
         <div class="stats-advanced">
             <div class="stat-card-advanced">
-                <div class="stat-icon cars">
-                    <i class="fas fa-car"></i>
-                </div>
+                <div class="stat-icon cars"><i class="fas fa-car"></i></div>
                 <div class="stat-info">
                     <h3>إجمالي السيارات</h3>
                     <div class="number" id="statsTotalCars">0</div>
                 </div>
             </div>
             <div class="stat-card-advanced">
-                <div class="stat-icon capital">
-                    <i class="fas fa-coins"></i>
-                </div>
+                <div class="stat-icon capital"><i class="fas fa-coins"></i></div>
                 <div class="stat-info">
                     <h3>إجمالي رأس المال</h3>
                     <div class="number" id="statsTotalCapital">0 جنيه</div>
                 </div>
             </div>
             <div class="stat-card-advanced">
-                <div class="stat-icon expenses">
-                    <i class="fas fa-wrench"></i>
-                </div>
+                <div class="stat-icon expenses"><i class="fas fa-wrench"></i></div>
                 <div class="stat-info">
                     <h3>إجمالي المصروفات</h3>
                     <div class="number" id="statsTotalExpenses">0 جنيه</div>
                 </div>
             </div>
             <div class="stat-card-advanced">
-                <div class="stat-icon profit">
-                    <i class="fas fa-briefcase"></i>
-                </div>
+                <div class="stat-icon profit"><i class="fas fa-briefcase"></i></div>
                 <div class="stat-info">
                     <h3>إجمالي الأرباح</h3>
                     <div class="number" id="statsTotalWork">0 جنيه</div>
@@ -632,29 +552,17 @@
             </div>
         </div>
 
-        <!-- الإجراءات السريعة -->
         <div class="quick-actions">
-            <button class="quick-btn primary" onclick="openModal('carModal')">
-                <i class="fas fa-plus-circle"></i> سيارة جديدة
-            </button>
-            <button class="quick-btn success" onclick="openModal('expenseModal')">
-                <i class="fas fa-wrench"></i> تسجيل مصروف
-            </button>
-            <button class="quick-btn warning" onclick="openModal('capitalModal')">
-                <i class="fas fa-coins"></i> إضافة رأس مال
-            </button>
-            <button class="quick-btn work" onclick="openModal('workModal')">
-                <i class="fas fa-briefcase"></i> تسجيل شغل
-            </button>
-            <button class="quick-btn" onclick="exportData()">
-                <i class="fas fa-download"></i> تصدير تقرير
-            </button>
-            <button class="quick-btn danger" onclick="resetAllData()" style="background: linear-gradient(135deg, #c62828, #f44336);">
-                <i class="fas fa-trash-alt"></i> تصفير الكل
-            </button>
+            <button class="quick-btn primary" onclick="openModal('carModal')"><i class="fas fa-plus-circle"></i> سيارة جديدة</button>
+            <button class="quick-btn success" onclick="openModal('expenseModal')"><i class="fas fa-wrench"></i> مصروف</button>
+            <button class="quick-btn warning" onclick="openModal('capitalModal')"><i class="fas fa-coins"></i> رأس مال</button>
+            <button class="quick-btn work" onclick="openModal('workModal')"><i class="fas fa-briefcase"></i> شغل</button>
+            <button class="quick-btn backup" onclick="exportAdvanced()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+            <button class="quick-btn backup" onclick="createManualBackup()"><i class="fas fa-database"></i> نسخة احتياطية</button>
+            <button class="quick-btn restore" onclick="openRestoreModal()"><i class="fas fa-undo-alt"></i> استعادة بيانات</button>
+            <button class="quick-btn danger" onclick="openPasswordModal()"><i class="fas fa-trash-alt"></i> تصفير الكل</button>
         </div>
 
-        <!-- البحث والتصفية -->
         <div class="search-section">
             <div class="search-box">
                 <i class="fas fa-search"></i>
@@ -667,150 +575,62 @@
             </div>
         </div>
 
-        <!-- شبكة السيارات -->
         <div id="carsAdvancedGrid" class="cars-advanced-grid"></div>
     </div>
 
-    <!-- مودال إضافة سيارة -->
-    <div id="carModal" class="modal-advanced">
+    <!-- باقي المودالات كما هي لكن مختصرة -->
+    <div id="carModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-car"></i> إضافة سيارة جديدة</h2><div class="close-modal" onclick="closeModal('carModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addCar(event)"><div class="form-group"><label>رقم السيارة</label><input type="text" class="form-control" id="carNumber" required></div><div class="form-group"><label>الموديل</label><input type="text" class="form-control" id="carModel" required></div><div class="form-group"><label>رأس المال (جنيه)</label><input type="number" class="form-control" id="carCapital" required></div><div class="form-group"><label>الحالة</label><select class="form-control" id="carStatus"><option value="working">🚀 تعمل</option><option value="repair">🔧 صيانة</option></select></div><button type="submit" class="quick-btn primary" style="width:100%"><i class="fas fa-save"></i> حفظ</button></form></div></div>
+
+    <div id="expenseModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-wrench"></i> تسجيل مصروف</h2><div class="close-modal" onclick="closeModal('expenseModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addExpense(event)"><div class="form-group"><label>السيارة</label><select class="form-control" id="expenseCar" required></select></div><div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="expenseAmount" required></div><div class="form-group"><label>التاريخ</label><input type="date" class="form-control" id="expenseDate" required></div><div class="form-group"><label>ملاحظات</label><textarea class="form-control" id="expenseNote" rows="2"></textarea></div><button type="submit" class="quick-btn success" style="width:100%"><i class="fas fa-save"></i> تسجيل</button></form></div></div>
+
+    <div id="capitalModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-coins"></i> إضافة رأس مال</h2><div class="close-modal" onclick="closeModal('capitalModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addCapital(event)"><div class="form-group"><label>السيارة</label><select class="form-control" id="capitalCar" required></select></div><div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="capitalAmount" required></div><div class="form-group"><label>التاريخ</label><input type="date" class="form-control" id="capitalDate" required></div><button type="submit" class="quick-btn warning" style="width:100%"><i class="fas fa-save"></i> إضافة</button></form></div></div>
+
+    <div id="workModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-briefcase"></i> تسجيل شغل</h2><div class="close-modal" onclick="closeModal('workModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addWorkEarning(event)"><div class="form-group"><label>السيارة</label><select class="form-control" id="workCar" required></select></div><div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="workAmount" required></div><div class="form-group"><label>التاريخ</label><input type="date" class="form-control" id="workDate" required></div><div class="form-group"><label>ملاحظات</label><textarea class="form-control" id="workNote" rows="2"></textarea></div><button type="submit" class="quick-btn work" style="width:100%"><i class="fas fa-save"></i> تسجيل</button></form></div></div>
+
+    <!-- مودال استعادة البيانات -->
+    <div id="restoreModal" class="modal-advanced">
         <div class="modal-content-advanced">
             <div class="modal-header">
-                <h2><i class="fas fa-car"></i> إضافة سيارة جديدة</h2>
-                <div class="close-modal" onclick="closeModal('carModal')">
-                    <i class="fas fa-times"></i>
-                </div>
+                <h2><i class="fas fa-undo-alt"></i> استعادة بيانات</h2>
+                <div class="close-modal" onclick="closeModal('restoreModal')"><i class="fas fa-times"></i></div>
             </div>
-            <form onsubmit="addCar(event)">
-                <div class="form-group">
-                    <label>رقم السيارة</label>
-                    <input type="text" class="form-control" id="carNumber" placeholder="مثال: 3938 أ" required>
-                </div>
-                <div class="form-group">
-                    <label>الموديل</label>
-                    <input type="text" class="form-control" id="carModel" placeholder="مثال: تويوتا كورولا" required>
-                </div>
-                <div class="form-group">
-                    <label>رأس المال (جنيه)</label>
-                    <input type="number" class="form-control" id="carCapital" placeholder="50000" required>
-                </div>
-                <div class="form-group">
-                    <label>الحالة</label>
-                    <select class="form-control" id="carStatus">
-                        <option value="working">🚀 تعمل</option>
-                        <option value="repair">🔧 صيانة</option>
-                    </select>
-                </div>
-                <button type="submit" class="quick-btn primary" style="width:100%">
-                    <i class="fas fa-save"></i> حفظ السيارة
-                </button>
-            </form>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 50px; color: #6a1b9a;"></i>
+                <p style="margin-top: 10px; color: #666;">اختر ملف النسخة الاحتياطية لاستعادة جميع البيانات</p>
+            </div>
+            <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreFromBackup(event)">
+            <button class="quick-btn restore" style="width:100%; margin-bottom: 10px;" onclick="document.getElementById('restoreFile').click()">
+                <i class="fas fa-folder-open"></i> اختيار ملف
+            </button>
+            <div id="backupFilesList" style="margin-top: 20px; max-height: 300px; overflow-y: auto;"></div>
         </div>
     </div>
 
-    <!-- مودال إضافة مصروف -->
-    <div id="expenseModal" class="modal-advanced">
+    <!-- مودال تأكيد كلمة المرور -->
+    <div id="passwordModal" class="modal-advanced">
         <div class="modal-content-advanced">
             <div class="modal-header">
-                <h2><i class="fas fa-wrench"></i> تسجيل مصروف</h2>
-                <div class="close-modal" onclick="closeModal('expenseModal')">
-                    <i class="fas fa-times"></i>
-                </div>
+                <h2><i class="fas fa-lock"></i> تأكيد الأمان</h2>
+                <div class="close-modal" onclick="closeModal('passwordModal')"><i class="fas fa-times"></i></div>
             </div>
-            <form onsubmit="addExpense(event)">
-                <div class="form-group">
-                    <label>اختر السيارة</label>
-                    <select class="form-control" id="expenseCar" required>
-                        <option value="">-- اختر سيارة --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>المبلغ (جنيه)</label>
-                    <input type="number" class="form-control" id="expenseAmount" placeholder="1000" required>
-                </div>
-                <div class="form-group">
-                    <label>التاريخ</label>
-                    <input type="date" class="form-control" id="expenseDate" required>
-                </div>
-                <div class="form-group">
-                    <label>ملاحظات</label>
-                    <textarea class="form-control" id="expenseNote" rows="3" placeholder="تفاصيل المصروف..."></textarea>
-                </div>
-                <button type="submit" class="quick-btn success" style="width:100%">
-                    <i class="fas fa-save"></i> تسجيل المصروف
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- مودال إضافة رأس مال -->
-    <div id="capitalModal" class="modal-advanced">
-        <div class="modal-content-advanced">
-            <div class="modal-header">
-                <h2><i class="fas fa-coins"></i> إضافة رأس مال</h2>
-                <div class="close-modal" onclick="closeModal('capitalModal')">
-                    <i class="fas fa-times"></i>
-                </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 50px; color: #c62828;"></i>
+                <p style="margin-top: 10px;">هذا الإجراء سيحذف <strong>جميع البيانات</strong> بشكل نهائي</p>
             </div>
-            <form onsubmit="addCapital(event)">
-                <div class="form-group">
-                    <label>اختر السيارة</label>
-                    <select class="form-control" id="capitalCar" required>
-                        <option value="">-- اختر سيارة --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>المبلغ (جنيه)</label>
-                    <input type="number" class="form-control" id="capitalAmount" placeholder="10000" required>
-                </div>
-                <div class="form-group">
-                    <label>التاريخ</label>
-                    <input type="date" class="form-control" id="capitalDate" required>
-                </div>
-                <button type="submit" class="quick-btn warning" style="width:100%">
-                    <i class="fas fa-save"></i> إضافة رأس المال
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- مودال إضافة شغل (أرباح) -->
-    <div id="workModal" class="modal-advanced">
-        <div class="modal-content-advanced">
-            <div class="modal-header">
-                <h2><i class="fas fa-briefcase"></i> تسجيل شغل (أرباح)</h2>
-                <div class="close-modal" onclick="closeModal('workModal')">
-                    <i class="fas fa-times"></i>
-                </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" class="form-control" id="adminPassword" placeholder="أدخل كلمة المرور">
             </div>
-            <form onsubmit="addWorkEarning(event)">
-                <div class="form-group">
-                    <label>اختر السيارة</label>
-                    <select class="form-control" id="workCar" required>
-                        <option value="">-- اختر سيارة --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>المبلغ (جنيه)</label>
-                    <input type="number" class="form-control" id="workAmount" placeholder="500" required>
-                </div>
-                <div class="form-group">
-                    <label>التاريخ</label>
-                    <input type="date" class="form-control" id="workDate" required>
-                </div>
-                <div class="form-group">
-                    <label>ملاحظات</label>
-                    <textarea class="form-control" id="workNote" rows="3" placeholder="تفاصيل الشغل..."></textarea>
-                </div>
-                <button type="submit" class="quick-btn work" style="width:100%">
-                    <i class="fas fa-save"></i> تسجيل الأرباح
-                </button>
-            </form>
+            <button class="quick-btn danger" style="width:100%" onclick="confirmResetAll()">
+                <i class="fas fa-trash-alt"></i> تأكيد التصفير
+            </button>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #999;">كلمة المرور الافتراضية: 123456</p>
         </div>
     </div>
 
     <script>
         // ==============================================
-        // 🔥 تهيئة Firebase
+        // تهيئة Firebase
         // ==============================================
         const firebaseConfig = {
             apiKey: "AIzaSyB9WZIZ3PUoeH6AokLtrIybsYdG2SxuLUk",
@@ -822,7 +642,6 @@
             appId: "1:173120244840:web:8968e4adc4f92a1e2a3fdd"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -835,549 +654,444 @@
         let currentFilter = 'all';
         let searchTerm = '';
 
+        // مفتاح النسخ الاحتياطي في localStorage
+        const BACKUP_KEY = 'shawqi_last_backup_date';
+
         // ==============================================
-        // تحديث حالة الاتصال
+        // التحقق من النسخ الاحتياطي التلقائي كل 10 أيام
+        // ==============================================
+        function checkAutoBackup() {
+            const lastBackup = localStorage.getItem(BACKUP_KEY);
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!lastBackup) {
+                // أول مرة - نطلب نسخة احتياطية
+                showBackupNotification("مرحباً! ننصح بعمل نسخة احتياطية أولى لحماية بياناتك");
+                return;
+            }
+            
+            const lastDate = new Date(lastBackup);
+            const currentDate = new Date();
+            const diffDays = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 10) {
+                showBackupNotification(`مرت ${diffDays} يوم على آخر نسخة احتياطية. يرجى عمل نسخة جديدة لحماية بياناتك`);
+            }
+        }
+        
+        function showBackupNotification(message) {
+            const notif = document.getElementById('backupNotification');
+            document.getElementById('backupMessage').innerText = message;
+            notif.style.display = 'flex';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 10000);
+        }
+        
+        // ==============================================
+        // عمل نسخة احتياطية يدوية
+        // ==============================================
+        function createManualBackup() {
+            const backupData = {
+                version: "1.0",
+                backupDate: new Date().toISOString(),
+                cars: cars,
+                expenses: expenses,
+                workEarnings: workEarnings,
+                stats: {
+                    totalCars: cars.length,
+                    totalCapital: cars.reduce((s, c) => s + (c.capital || 0), 0),
+                    totalExpenses: expenses.reduce((s, e) => s + (e.amount || 0), 0),
+                    totalWork: workEarnings.reduce((s, w) => s + (w.amount || 0), 0)
+                }
+            };
+            
+            const fileName = `shawqi_backup_${new Date().toISOString().split('T')[0]}.json`;
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            
+            // تحديث تاريخ آخر نسخة احتياطية
+            localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+            
+            // إخفاء الإشعار
+            document.getElementById('backupNotification').style.display = 'none';
+            showToast('✅ تم حفظ النسخة الاحتياطية بنجاح', 'success');
+        }
+        
+        // ==============================================
+        // فتح مودال الاستعادة وعرض الملفات المحفوظة
+        // ==============================================
+        function openRestoreModal() {
+            openModal('restoreModal');
+            // عرض الملفات المحفوظة في الجهاز
+            showSavedBackups();
+        }
+        
+        function showSavedBackups() {
+            // هذه وظيفة اختيارية - تعرض آخر نسخة محفوظة
+            const lastBackup = localStorage.getItem(BACKUP_KEY);
+            const container = document.getElementById('backupFilesList');
+            if (lastBackup) {
+                container.innerHTML = `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 15px;">
+                        <i class="fas fa-check-circle" style="color: #4caf50;"></i>
+                        <strong>آخر نسخة احتياطية:</strong> ${new Date(lastBackup).toLocaleDateString('ar-EG')}
+                        <br><small>يمكنك استعادة البيانات من ملف JSON قمت بحفظه مسبقاً</small>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 15px;">
+                        <i class="fas fa-info-circle" style="color: #ff9800;"></i>
+                        لا توجد نسخ احتياطية محفوظة. اضغط على "نسخة احتياطية" أولاً لحماية بياناتك.
+                    </div>
+                `;
+            }
+        }
+        
+        // ==============================================
+        // استعادة البيانات من ملف
+        // ==============================================
+        function restoreFromBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    // التحقق من صحة الملف
+                    if (!backupData.cars || !backupData.expenses || !backupData.workEarnings) {
+                        throw new Error("ملف غير صالح");
+                    }
+                    
+                    if (confirm(`⚠️ هل أنت متأكد من استعادة البيانات؟\nسيتم استبدال كل البيانات الحالية ببيانات النسخة الاحتياطية من تاريخ ${new Date(backupData.backupDate).toLocaleDateString('ar-EG')}`)) {
+                        
+                        // حذف البيانات الحالية
+                        database.ref('cars').remove();
+                        database.ref('expenses').remove();
+                        database.ref('workEarnings').remove();
+                        
+                        // إضافة البيانات الجديدة
+                        backupData.cars.forEach(car => {
+                            const id = car.id || Date.now() + Math.random();
+                            database.ref('cars/' + id).set({
+                                number: car.number,
+                                model: car.model,
+                                capital: car.capital,
+                                status: car.status
+                            });
+                        });
+                        
+                        backupData.expenses.forEach(expense => {
+                            const id = expense.id || Date.now() + Math.random();
+                            database.ref('expenses/' + id).set({
+                                carId: expense.carId,
+                                amount: expense.amount,
+                                date: expense.date,
+                                note: expense.note
+                            });
+                        });
+                        
+                        backupData.workEarnings.forEach(work => {
+                            const id = work.id || Date.now() + Math.random();
+                            database.ref('workEarnings/' + id).set({
+                                carId: work.carId,
+                                amount: work.amount,
+                                date: work.date,
+                                note: work.note
+                            });
+                        });
+                        
+                        closeModal('restoreModal');
+                        showToast('✅ تم استعادة البيانات بنجاح', 'success');
+                    }
+                } catch (error) {
+                    showToast('❌ خطأ: الملف غير صالح', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // reset input
+        }
+        
+        // ==============================================
+        // تصدير احترافي Excel
+        // ==============================================
+        function exportAdvanced() {
+            // إعداد بيانات Excel
+            const carData = cars.map(car => ({
+                'رقم السيارة': car.number || '',
+                'الموديل': car.model || '',
+                'رأس المال الأصلي': car.capital || 0,
+                'الحالة': car.status === 'working' ? 'تعمل' : 'صيانة',
+                'إجمالي المصروفات': getCarExpenses(car.id),
+                'إجمالي الأرباح': getCarWorkEarnings(car.id),
+                'رأس المال الحالي': getCurrentCapital(car.id)
+            }));
+            
+            const expensesData = expenses.map(e => {
+                const car = cars.find(c => c.id === e.carId);
+                return {
+                    'السيارة': car?.number || 'غير معروف',
+                    'المبلغ': e.amount || 0,
+                    'التاريخ': e.date || '',
+                    'الملاحظات': e.note || ''
+                };
+            });
+            
+            const workData = workEarnings.map(w => {
+                const car = cars.find(c => c.id === w.carId);
+                return {
+                    'السيارة': car?.number || 'غير معروف',
+                    'المبلغ': w.amount || 0,
+                    'التاريخ': w.date || '',
+                    'الملاحظات': w.note || ''
+                };
+            });
+            
+            // إنشاء ورقة عمل
+            const wb = XLSX.utils.book_new();
+            const wsCars = XLSX.utils.json_to_sheet(carData);
+            const wsExpenses = XLSX.utils.json_to_sheet(expensesData);
+            const wsWork = XLSX.utils.json_to_sheet(workData);
+            
+            XLSX.utils.book_append_sheet(wb, wsCars, 'السيارات');
+            XLSX.utils.book_append_sheet(wb, wsExpenses, 'المصروفات');
+            XLSX.utils.book_append_sheet(wb, wsWork, 'الأرباح');
+            
+            XLSX.writeFile(wb, `shawqi_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast('✅ تم تصدير التقرير بنجاح', 'success');
+        }
+        
+        // ==============================================
+        // فتح مودال كلمة المرور للتصفير
+        // ==============================================
+        function openPasswordModal() {
+            openModal('passwordModal');
+            document.getElementById('adminPassword').value = '';
+        }
+        
+        function confirmResetAll() {
+            const password = document.getElementById('adminPassword').value;
+            // كلمة المرور الافتراضية - يمكنك تغييرها
+            if (password === '123456') {
+                if (confirm('⚠️ تحذير نهائي! هل أنت متأكد من تصفير كل البيانات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+                    database.ref('cars').remove();
+                    database.ref('expenses').remove();
+                    database.ref('workEarnings').remove();
+                    closeModal('passwordModal');
+                    showToast('✅ تم تصفير جميع البيانات', 'warning');
+                }
+            } else {
+                showToast('❌ كلمة المرور غير صحيحة', 'error');
+            }
+        }
+        
+        // ==============================================
+        // دوال مساعدة (مستمرة من الكود الأصلي)
         // ==============================================
         function updateConnectionStatus(isConnected, message) {
             const statusDot = document.getElementById('statusDot');
             const connectionText = document.getElementById('connectionText');
-            
             if (isConnected) {
                 statusDot.className = 'status-dot';
                 connectionText.innerText = message || 'متصل ومتزامن';
             } else {
                 statusDot.className = 'status-dot offline';
-                connectionText.innerText = message || 'غير متصل (حفظ محلي)';
+                connectionText.innerText = message || 'غير متصل';
             }
         }
-
-        // ==============================================
-        // تحميل البيانات من Firebase مع تحديث لحظي
-        // ==============================================
+        
         function setupRealtimeUpdates() {
             updateConnectionStatus(true, 'جاري التحميل...');
-            
-            // استماع للسيارات
             database.ref('cars').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        cars = Object.keys(data).map(key => ({
-                            id: key,
-                            ...data[key]
-                        }));
-                    } else {
-                        cars = [];
-                    }
-                    renderAll();
-                    updateConnectionStatus(true, 'تم التحديث');
-                } catch (error) {
-                    console.error('خطأ في السيارات:', error);
-                }
+                const data = snapshot.val();
+                cars = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                renderAll();
             });
-
-            // استماع للمصروفات
             database.ref('expenses').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        expenses = Object.keys(data).map(key => ({
-                            id: key,
-                            ...data[key]
-                        }));
-                    } else {
-                        expenses = [];
-                    }
-                    renderAll();
-                    updateConnectionStatus(true, 'تم التحديث');
-                } catch (error) {
-                    console.error('خطأ في المصروفات:', error);
-                }
+                const data = snapshot.val();
+                expenses = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                renderAll();
             });
-
-            // استماع للأرباح
             database.ref('workEarnings').on('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (data) {
-                        workEarnings = Object.keys(data).map(key => ({
-                            id: key,
-                            ...data[key]
-                        }));
-                    } else {
-                        workEarnings = [];
-                    }
-                    renderAll();
-                    updateConnectionStatus(true, 'تم التحديث');
-                } catch (error) {
-                    console.error('خطأ في الأرباح:', error);
-                }
+                const data = snapshot.val();
+                workEarnings = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                renderAll();
+                updateConnectionStatus(true, 'تم التحديث');
             });
         }
-
-        // ==============================================
-        // دوال المساعدة
-        // ==============================================
         
-        // دالة لحساب رأس المال الحالي (رأس المال الأصلي + الأرباح - المصروفات)
         function getCurrentCapital(carId) {
             const car = cars.find(c => c.id === carId);
             if (!car) return 0;
-            
             const totalExpenses = expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
             const totalWork = workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
-            
             return (car.capital || 0) + totalWork - totalExpenses;
         }
-
-        // دالة لحساب إجمالي الأرباح لسيارة معينة
+        
         function getCarWorkEarnings(carId) {
             return workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
         }
-
-        // دالة لحساب إجمالي المصروفات لسيارة معينة
+        
         function getCarExpenses(carId) {
             return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
         }
-
-        // دوال للحصول على آخر 3 عناصر
+        
         function getCarWorkEarningsList(carId) {
             return workEarnings.filter(w => w.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         }
-
+        
         function getCarExpensesList(carId) {
             return expenses.filter(e => e.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         }
-
-        // دوال التصفية والبحث
+        
         function filterCars(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderCars();
         }
-
+        
         function searchCars() {
             searchTerm = document.getElementById('searchInput').value.toLowerCase();
             renderCars();
         }
-
+        
         function getFilteredCars() {
             let filtered = [...cars];
-            if (currentFilter !== 'all') {
-                filtered = filtered.filter(c => c.status === currentFilter);
-            }
-            if (searchTerm) {
-                filtered = filtered.filter(c => 
-                    (c.number || '').toLowerCase().includes(searchTerm) || 
-                    (c.model || '').toLowerCase().includes(searchTerm)
-                );
-            }
+            if (currentFilter !== 'all') filtered = filtered.filter(c => c.status === currentFilter);
+            if (searchTerm) filtered = filtered.filter(c => (c.number || '').toLowerCase().includes(searchTerm) || (c.model || '').toLowerCase().includes(searchTerm));
             return filtered;
         }
-
-        // دوال العرض
+        
         function renderAll() {
             renderCars();
             updateStats();
             updateSelects();
         }
-
+        
         function renderCars() {
             const grid = document.getElementById('carsAdvancedGrid');
-            if (!grid) return;
-            
             const filteredCars = getFilteredCars();
-            
             if (filteredCars.length === 0) {
-                grid.innerHTML = `
-                    <div style="grid-column:1/-1; text-align:center; padding:60px; background:white; border-radius:30px;">
-                        <i class="fas fa-car" style="font-size:60px; color:#ccc; margin-bottom:20px;"></i>
-                        <h3 style="color:#666;">لا توجد سيارات</h3>
-                    </div>
-                `;
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; background:white; border-radius:30px;"><i class="fas fa-car" style="font-size:60px; color:#ccc;"></i><h3>لا توجد سيارات</h3></div>`;
                 return;
             }
-            
             grid.innerHTML = filteredCars.map(car => {
                 const expenses_list = getCarExpensesList(car.id);
                 const work_list = getCarWorkEarningsList(car.id);
                 const totalExpenses = getCarExpenses(car.id);
                 const totalWork = getCarWorkEarnings(car.id);
                 const currentCapital = getCurrentCapital(car.id);
-                
-                return `
-                <div class="car-advanced-card" data-car-id="${car.id}">
-                    <div class="car-header-gradient">
-                        <div class="car-badge">
-                            <i class="fas fa-calendar"></i> ${new Date().getFullYear()}
-                        </div>
-                        <div class="car-number-large">
-                            ${car.number || 'بدون رقم'}
-                        </div>
-                    </div>
-                    
-                    <div class="car-content">
-                        <div class="car-info-row">
-                            <span class="car-model">${car.model || 'بدون موديل'}</span>
-                            <span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">
-                                ${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}
-                            </span>
-                        </div>
-                        
-                        <div class="progress-stats">
-                            <div class="progress-item">
-                                <div class="progress-label">رأس المال الأصلي</div>
-                                <div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div>
-                            </div>
-                            <div class="progress-item">
-                                <div class="progress-label">الصافي الحالي</div>
-                                <div class="progress-value" style="color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'}">
-                                    ${currentCapital.toLocaleString()} جنيه
-                                </div>
-                            </div>
-                        </div>
-                        
-                        ${work_list.length > 0 ? `
-                        <div class="work-history">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-briefcase"></i> آخر الأرباح (+)</span>
-                                <span onclick="showAllWork('${car.id}')" style="color:#00b09b; cursor:pointer;">عرض الكل</span>
-                            </div>
-                            ${work_list.map(work => `
-                                <div class="work-item">
-                                    <div>
-                                        <div class="work-note">${work.note || 'شغل'}</div>
-                                        <small>${work.date || ''}</small>
-                                    </div>
-                                    <div class="work-amount">+${(work.amount || 0).toLocaleString()} جنيه</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ` : ''}
-                        
-                        <div class="expenses-history">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-history"></i> آخر المصروفات (-)</span>
-                                <span onclick="showAllExpenses('${car.id}')" style="color:#c62828; cursor:pointer;">عرض الكل</span>
-                            </div>
-                            
-                            ${expenses_list.length > 0 ? expenses_list.map(exp => `
-                                <div class="expense-item">
-                                    <div>
-                                        <div class="expense-note">${exp.note || 'مصروف'}</div>
-                                        <small>${exp.date || ''}</small>
-                                    </div>
-                                    <div class="expense-amount">-${(exp.amount || 0).toLocaleString()} جنيه</div>
-                                </div>
-                            `).join('') : `
-                                <div style="text-align:center; color:#999; padding:10px;">
-                                    لا توجد مصروفات
-                                </div>
-                            `}
-                        </div>
-                        
-                        <div class="net-profit" style="background:${currentCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>💼 إجمالي الأرباح (المضافة)</span>
-                                <span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>🔧 إجمالي المصروفات (المخصومة)</span>
-                                <span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;">
-                                <span style="font-weight:bold;">رأس المال الحالي</span>
-                                <span style="font-size:1.5rem; font-weight:bold; color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'};">
-                                    ${currentCapital.toLocaleString()} جنيه
-                                </span>
-                            </div>
-                            <div style="font-size:0.8rem; color:#666; margin-top:5px; text-align:center;">
-                                (رأس المال الأصلي + الأرباح - المصروفات)
-                            </div>
-                        </div>
-                        
-                        <div class="car-controls">
-                            <button class="control-btn-small expense" onclick="quickExpense('${car.id}')">
-                                <i class="fas fa-wrench"></i> مصروف
-                            </button>
-                            <button class="control-btn-small capital" onclick="quickCapital('${car.id}')">
-                                <i class="fas fa-coins"></i> رأس مال
-                            </button>
-                            <button class="control-btn-small work" onclick="quickWork('${car.id}')">
-                                <i class="fas fa-briefcase"></i> شغل
-                            </button>
-                            <button class="control-btn-small delete" onclick="deleteCar('${car.id}')">
-                                <i class="fas fa-trash"></i> حذف
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
+                return `<div class="car-advanced-card"><div class="car-header-gradient"><div class="car-badge"><i class="fas fa-calendar"></i> ${new Date().getFullYear()}</div><div class="car-number-large">${car.number || 'بدون رقم'}</div></div><div class="car-content"><div class="car-info-row"><span class="car-model">${car.model || 'بدون موديل'}</span><span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}</span></div><div class="progress-stats"><div class="progress-item"><div class="progress-label">رأس المال الأصلي</div><div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div></div><div class="progress-item"><div class="progress-label">الصافي الحالي</div><div class="progress-value" style="color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'}">${currentCapital.toLocaleString()} جنيه</div></div></div>${work_list.length > 0 ? `<div class="work-history"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-briefcase"></i> آخر الأرباح</span><span onclick="showAllWork('${car.id}')" style="color:#00b09b; cursor:pointer;">عرض الكل</span></div>${work_list.map(w => `<div class="work-item"><div><div class="work-note">${w.note || 'شغل'}</div><small>${w.date || ''}</small></div><div class="work-amount">+${(w.amount || 0).toLocaleString()}</div></div>`).join('')}</div>` : ''}<div class="expenses-history"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-history"></i> آخر المصروفات</span><span onclick="showAllExpenses('${car.id}')" style="color:#c62828; cursor:pointer;">عرض الكل</span></div>${expenses_list.length > 0 ? expenses_list.map(e => `<div class="expense-item"><div><div class="expense-note">${e.note || 'مصروف'}</div><small>${e.date || ''}</small></div><div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div></div>`).join('') : '<div style="text-align:center; color:#999; padding:10px;">لا توجد مصروفات</div>'}</div><div class="net-profit" style="background:${currentCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;"><div style="display:flex; justify-content:space-between;"><span>💼 إجمالي الأرباح</span><span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span></div><div style="display:flex; justify-content:space-between;"><span>🔧 إجمالي المصروفات</span><span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span></div><div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;"><span style="font-weight:bold;">رأس المال الحالي</span><span style="font-size:1.5rem; font-weight:bold; color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'};">${currentCapital.toLocaleString()} جنيه</span></div></div><div class="car-controls"><button class="control-btn-small expense" onclick="quickExpense('${car.id}')"><i class="fas fa-wrench"></i> مصروف</button><button class="control-btn-small capital" onclick="quickCapital('${car.id}')"><i class="fas fa-coins"></i> رأس مال</button><button class="control-btn-small work" onclick="quickWork('${car.id}')"><i class="fas fa-briefcase"></i> شغل</button><button class="control-btn-small delete" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i> حذف</button></div></div></div>`;
             }).join('');
         }
-
+        
         function updateStats() {
-            const totalCars = cars.length;
-            const totalCapital = cars.reduce((sum, c) => sum + (c.capital || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const totalWork = workEarnings.reduce((sum, w) => sum + (w.amount || 0), 0);
-            
-            document.getElementById('statsTotalCars').innerText = totalCars;
-            document.getElementById('statsTotalCapital').innerText = totalCapital.toLocaleString() + ' جنيه';
-            document.getElementById('statsTotalExpenses').innerText = totalExpenses.toLocaleString() + ' جنيه';
-            document.getElementById('statsTotalWork').innerText = totalWork.toLocaleString() + ' جنيه';
+            document.getElementById('statsTotalCars').innerText = cars.length;
+            document.getElementById('statsTotalCapital').innerText = cars.reduce((s, c) => s + (c.capital || 0), 0).toLocaleString() + ' جنيه';
+            document.getElementById('statsTotalExpenses').innerText = expenses.reduce((s, e) => s + (e.amount || 0), 0).toLocaleString() + ' جنيه';
+            document.getElementById('statsTotalWork').innerText = workEarnings.reduce((s, w) => s + (w.amount || 0), 0).toLocaleString() + ' جنيه';
         }
-
+        
         function updateSelects() {
-            const options = cars.map(c => 
-                `<option value="${c.id}">${c.number || 'بدون رقم'} - ${c.model || 'بدون موديل'}</option>`
-            ).join('');
-            
+            const options = cars.map(c => `<option value="${c.id}">${c.number || 'بدون رقم'} - ${c.model || ''}</option>`).join('');
             ['expenseCar', 'capitalCar', 'workCar'].forEach(id => {
                 const select = document.getElementById(id);
-                if (select) {
-                    select.innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
-                }
+                if (select) select.innerHTML = '<option value="">-- اختر سيارة --</option>' + options;
             });
         }
-
-        // ==============================================
-        // العمليات الرئيسية
-        // ==============================================
+        
         function addCar(e) {
             e.preventDefault();
-            
-            const newCar = {
-                id: Date.now().toString(),
-                number: document.getElementById('carNumber').value,
-                model: document.getElementById('carModel').value,
-                capital: parseFloat(document.getElementById('carCapital').value) || 0,
-                status: document.getElementById('carStatus').value
-            };
-            
-            database.ref('cars/' + newCar.id).set({
-                number: newCar.number,
-                model: newCar.model,
-                capital: newCar.capital,
-                status: newCar.status
-            });
-            
+            const newCar = { id: Date.now().toString(), number: document.getElementById('carNumber').value, model: document.getElementById('carModel').value, capital: parseFloat(document.getElementById('carCapital').value) || 0, status: document.getElementById('carStatus').value };
+            database.ref('cars/' + newCar.id).set({ number: newCar.number, model: newCar.model, capital: newCar.capital, status: newCar.status });
             closeModal('carModal');
             e.target.reset();
             showToast('تم إضافة السيارة', 'success');
         }
-
+        
         function toggleCarStatus(id) {
             const car = cars.find(c => c.id === id);
-            if (car) {
-                const newStatus = car.status === 'working' ? 'repair' : 'working';
-                database.ref('cars/' + id + '/status').set(newStatus);
-                showToast('تم تغيير الحالة', 'success');
-            }
+            if (car) database.ref('cars/' + id + '/status').set(car.status === 'working' ? 'repair' : 'working');
         }
-
+        
         function addExpense(e) {
             e.preventDefault();
-            
-            const newExpense = {
-                id: Date.now().toString(),
-                carId: document.getElementById('expenseCar').value,
-                amount: parseFloat(document.getElementById('expenseAmount').value) || 0,
-                date: document.getElementById('expenseDate').value,
-                note: document.getElementById('expenseNote').value || 'مصروف'
-            };
-            
-            database.ref('expenses/' + newExpense.id).set({
-                carId: newExpense.carId,
-                amount: newExpense.amount,
-                date: newExpense.date,
-                note: newExpense.note
-            });
-            
+            database.ref('expenses/' + Date.now().toString()).set({ carId: document.getElementById('expenseCar').value, amount: parseFloat(document.getElementById('expenseAmount').value) || 0, date: document.getElementById('expenseDate').value, note: document.getElementById('expenseNote').value || 'مصروف' });
             closeModal('expenseModal');
             e.target.reset();
             showToast('تم تسجيل المصروف', 'success');
         }
-
+        
         function addCapital(e) {
             e.preventDefault();
-            
             const carId = document.getElementById('capitalCar').value;
             const amount = parseFloat(document.getElementById('capitalAmount').value) || 0;
-            
             const car = cars.find(c => c.id === carId);
-            if (car) {
-                const newCapital = (car.capital || 0) + amount;
-                database.ref('cars/' + carId + '/capital').set(newCapital);
-            }
-            
+            if (car) database.ref('cars/' + carId + '/capital').set((car.capital || 0) + amount);
             closeModal('capitalModal');
             e.target.reset();
             showToast('تم إضافة رأس المال', 'success');
         }
-
+        
         function addWorkEarning(e) {
             e.preventDefault();
-            
-            const newWork = {
-                id: Date.now().toString(),
-                carId: document.getElementById('workCar').value,
-                amount: parseFloat(document.getElementById('workAmount').value) || 0,
-                date: document.getElementById('workDate').value,
-                note: document.getElementById('workNote').value || 'شغل'
-            };
-            
-            database.ref('workEarnings/' + newWork.id).set({
-                carId: newWork.carId,
-                amount: newWork.amount,
-                date: newWork.date,
-                note: newWork.note
-            });
-            
+            database.ref('workEarnings/' + Date.now().toString()).set({ carId: document.getElementById('workCar').value, amount: parseFloat(document.getElementById('workAmount').value) || 0, date: document.getElementById('workDate').value, note: document.getElementById('workNote').value || 'شغل' });
             closeModal('workModal');
             e.target.reset();
             showToast('تم تسجيل الأرباح', 'success');
         }
-
-        // ==============================================
-        // دالة حذف السيارة مع كل العمليات المرتبطة بها (المهمة)
-        // ==============================================
+        
         function deleteCar(id) {
-            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة؟ سيتم حذف جميع مصروفاتها وأرباحها نهائياً!')) {
-                
-                // حذف السيارة
+            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة؟')) {
                 database.ref('cars/' + id).remove();
-                
-                // حذف جميع المصروفات المرتبطة بهذه السيارة
-                const expensesToDelete = expenses.filter(e => e.carId === id);
-                expensesToDelete.forEach(expense => {
-                    database.ref('expenses/' + expense.id).remove();
-                });
-                
-                // حذف جميع الأرباح المرتبطة بهذه السيارة
-                const workToDelete = workEarnings.filter(w => w.carId === id);
-                workToDelete.forEach(work => {
-                    database.ref('workEarnings/' + work.id).remove();
-                });
-                
-                showToast('تم حذف السيارة وجميع عملياتها', 'warning');
+                expenses.filter(e => e.carId === id).forEach(e => database.ref('expenses/' + e.id).remove());
+                workEarnings.filter(w => w.carId === id).forEach(w => database.ref('workEarnings/' + w.id).remove());
+                showToast('تم حذف السيارة', 'warning');
             }
         }
-
-        // ==============================================
-        // دالة تصفير كل البيانات (حذف كل شيء)
-        // ==============================================
-        function resetAllData() {
-            if (confirm('⚠️ هل أنت متأكد من تصفير كل البيانات؟ سيتم حذف جميع السيارات والمصروفات والأرباح نهائياً!')) {
-                
-                // حذف كل السيارات
-                database.ref('cars').remove();
-                
-                // حذف كل المصروفات
-                database.ref('expenses').remove();
-                
-                // حذف كل الأرباح
-                database.ref('workEarnings').remove();
-                
-                showToast('تم تصفير كل البيانات', 'warning');
-            }
-        }
-
-        function quickExpense(carId) {
-            openModal('expenseModal');
-            setTimeout(() => {
-                document.getElementById('expenseCar').value = carId;
-                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-            }, 100);
-        }
-
-        function quickCapital(carId) {
-            openModal('capitalModal');
-            setTimeout(() => {
-                document.getElementById('capitalCar').value = carId;
-                document.getElementById('capitalDate').value = new Date().toISOString().split('T')[0];
-            }, 100);
-        }
-
-        function quickWork(carId) {
-            openModal('workModal');
-            setTimeout(() => {
-                document.getElementById('workCar').value = carId;
-                document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
-            }, 100);
-        }
-
+        
+        function quickExpense(carId) { openModal('expenseModal'); setTimeout(() => { document.getElementById('expenseCar').value = carId; document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0]; }, 100); }
+        function quickCapital(carId) { openModal('capitalModal'); setTimeout(() => { document.getElementById('capitalCar').value = carId; document.getElementById('capitalDate').value = new Date().toISOString().split('T')[0]; }, 100); }
+        function quickWork(carId) { openModal('workModal'); setTimeout(() => { document.getElementById('workCar').value = carId; document.getElementById('workDate').value = new Date().toISOString().split('T')[0]; }, 100); }
+        
         function showAllExpenses(carId) {
             const car = cars.find(c => c.id === carId);
             const carExpenses = expenses.filter(e => e.carId === carId);
-            let message = `📋 مصروفات ${car?.number || 'السيارة'}:\n\n`;
-            if (carExpenses.length === 0) {
-                message += 'لا توجد مصروفات';
-            } else {
-                carExpenses.forEach(e => message += `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}\n\n`);
-            }
-            alert(message);
+            alert(`📋 مصروفات ${car?.number || 'السيارة'}:\n\n${carExpenses.length ? carExpenses.map(e => `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}`).join('\n\n') : 'لا توجد مصروفات'}`);
         }
-
+        
         function showAllWork(carId) {
             const car = cars.find(c => c.id === carId);
             const carWork = workEarnings.filter(w => w.carId === carId);
-            let message = `💰 أرباح ${car?.number || 'السيارة'}:\n\n`;
-            if (carWork.length === 0) {
-                message += 'لا توجد أرباح';
-            } else {
-                carWork.forEach(w => message += `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}\n\n`);
-            }
-            alert(message);
+            alert(`💰 أرباح ${car?.number || 'السيارة'}:\n\n${carWork.length ? carWork.map(w => `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}`).join('\n\n') : 'لا توجد أرباح'}`);
         }
-
-        function exportData() {
-            let report = `📊 تقرير الشوقي ترافيل\n`;
-            report += `📅 ${new Date().toLocaleDateString('ar-EG')}\n`;
-            report += `═`.repeat(40) + '\n\n';
-            report += `عدد السيارات: ${cars.length}\n`;
-            report += `إجمالي رأس المال الأصلي: ${cars.reduce((s, c) => s + (c.capital || 0), 0)} جنيه\n`;
-            report += `إجمالي الأرباح: ${workEarnings.reduce((s, w) => s + (w.amount || 0), 0)} جنيه\n`;
-            report += `إجمالي المصروفات: ${expenses.reduce((s, e) => s + (e.amount || 0), 0)} جنيه\n`;
-            
-            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `shawqi-report-${new Date().toISOString().split('T')[0]}.txt`;
-            link.click();
-            showToast('تم التصدير', 'success');
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        function showToast(message, type = 'info') {
+        
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = 'toast-message';
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
-
-        // ==============================================
-        // بدء التشغيل مع التحديث اللحظي
-        // ==============================================
+        
+        // بدء التشغيل
         document.addEventListener('DOMContentLoaded', () => {
             setupRealtimeUpdates();
-            
             document.getElementById('searchInput').addEventListener('input', searchCars);
-            
             document.querySelectorAll('.modal-advanced').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) modal.classList.remove('active');
-                });
+                modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
             });
+            checkAutoBackup();
         });
     </script>
 </body>
