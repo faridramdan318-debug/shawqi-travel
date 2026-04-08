@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>الشوقي ترافيل · النظام المتقدم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- إضافات للتصدير الاحترافي -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -478,6 +476,18 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .view-all-btn {
+            background: transparent;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-decoration: underline;
+        }
+        .records-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
         @media (max-width: 768px) {
             .main-header { flex-direction: column; text-align: center; }
             .logo-area { flex-direction: column; }
@@ -513,7 +523,6 @@
             </div>
         </div>
 
-        <!-- إشعار النسخ الاحتياطي -->
         <div id="backupNotification" class="backup-notification" style="display: none;">
             <span><i class="fas fa-database"></i> <span id="backupMessage"></span></span>
             <button onclick="createManualBackup()" style="background: white; border: none; padding: 8px 20px; border-radius: 50px; cursor: pointer; font-weight: bold;">
@@ -569,16 +578,16 @@
                 <input type="text" id="searchInput" placeholder="ابحث عن سيارة...">
             </div>
             <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterCars('all')">الكل</button>
-                <button class="filter-btn" onclick="filterCars('working')">🚀 تعمل</button>
-                <button class="filter-btn" onclick="filterCars('repair')">🔧 صيانة</button>
+                <button class="filter-btn active" onclick="filterCars('all', event)">الكل</button>
+                <button class="filter-btn" onclick="filterCars('working', event)">🚀 تعمل</button>
+                <button class="filter-btn" onclick="filterCars('repair', event)">🔧 صيانة</button>
             </div>
         </div>
 
         <div id="carsAdvancedGrid" class="cars-advanced-grid"></div>
     </div>
 
-    <!-- باقي المودالات كما هي لكن مختصرة -->
+    <!-- مودالات الإضافة -->
     <div id="carModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-car"></i> إضافة سيارة جديدة</h2><div class="close-modal" onclick="closeModal('carModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addCar(event)"><div class="form-group"><label>رقم السيارة</label><input type="text" class="form-control" id="carNumber" required></div><div class="form-group"><label>الموديل</label><input type="text" class="form-control" id="carModel" required></div><div class="form-group"><label>رأس المال (جنيه)</label><input type="number" class="form-control" id="carCapital" required></div><div class="form-group"><label>الحالة</label><select class="form-control" id="carStatus"><option value="working">🚀 تعمل</option><option value="repair">🔧 صيانة</option></select></div><button type="submit" class="quick-btn primary" style="width:100%"><i class="fas fa-save"></i> حفظ</button></form></div></div>
 
     <div id="expenseModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-wrench"></i> تسجيل مصروف</h2><div class="close-modal" onclick="closeModal('expenseModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addExpense(event)"><div class="form-group"><label>السيارة</label><select class="form-control" id="expenseCar" required></select></div><div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="expenseAmount" required></div><div class="form-group"><label>التاريخ</label><input type="date" class="form-control" id="expenseDate" required></div><div class="form-group"><label>ملاحظات</label><textarea class="form-control" id="expenseNote" rows="2"></textarea></div><button type="submit" class="quick-btn success" style="width:100%"><i class="fas fa-save"></i> تسجيل</button></form></div></div>
@@ -654,28 +663,22 @@
         let currentFilter = 'all';
         let searchTerm = '';
 
-        // مفتاح النسخ الاحتياطي في localStorage
         const BACKUP_KEY = 'shawqi_last_backup_date';
 
         // ==============================================
-        // التحقق من النسخ الاحتياطي التلقائي كل 10 أيام
+        // التحقق من النسخ الاحتياطي التلقائي
         // ==============================================
         function checkAutoBackup() {
             const lastBackup = localStorage.getItem(BACKUP_KEY);
-            const today = new Date().toISOString().split('T')[0];
-            
             if (!lastBackup) {
-                // أول مرة - نطلب نسخة احتياطية
                 showBackupNotification("مرحباً! ننصح بعمل نسخة احتياطية أولى لحماية بياناتك");
                 return;
             }
-            
             const lastDate = new Date(lastBackup);
             const currentDate = new Date();
             const diffDays = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
-            
             if (diffDays >= 10) {
-                showBackupNotification(`مرت ${diffDays} يوم على آخر نسخة احتياطية. يرجى عمل نسخة جديدة لحماية بياناتك`);
+                showBackupNotification(`مرت ${diffDays} يوم على آخر نسخة احتياطية. يرجى عمل نسخة جديدة`);
             }
         }
         
@@ -689,7 +692,7 @@
         }
         
         // ==============================================
-        // عمل نسخة احتياطية يدوية
+        // عمل نسخة احتياطية
         // ==============================================
         function createManualBackup() {
             const backupData = {
@@ -713,25 +716,20 @@
             link.download = fileName;
             link.click();
             
-            // تحديث تاريخ آخر نسخة احتياطية
             localStorage.setItem(BACKUP_KEY, new Date().toISOString());
-            
-            // إخفاء الإشعار
             document.getElementById('backupNotification').style.display = 'none';
             showToast('✅ تم حفظ النسخة الاحتياطية بنجاح', 'success');
         }
         
         // ==============================================
-        // فتح مودال الاستعادة وعرض الملفات المحفوظة
+        // استعادة البيانات
         // ==============================================
         function openRestoreModal() {
             openModal('restoreModal');
-            // عرض الملفات المحفوظة في الجهاز
             showSavedBackups();
         }
         
         function showSavedBackups() {
-            // هذه وظيفة اختيارية - تعرض آخر نسخة محفوظة
             const lastBackup = localStorage.getItem(BACKUP_KEY);
             const container = document.getElementById('backupFilesList');
             if (lastBackup) {
@@ -746,15 +744,12 @@
                 container.innerHTML = `
                     <div style="background: #fff3e0; padding: 15px; border-radius: 15px;">
                         <i class="fas fa-info-circle" style="color: #ff9800;"></i>
-                        لا توجد نسخ احتياطية محفوظة. اضغط على "نسخة احتياطية" أولاً لحماية بياناتك.
+                        لا توجد نسخ احتياطية محفوظة. اضغط على "نسخة احتياطية" أولاً.
                     </div>
                 `;
             }
         }
         
-        // ==============================================
-        // استعادة البيانات من ملف
-        // ==============================================
         function restoreFromBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -764,19 +759,16 @@
                 try {
                     const backupData = JSON.parse(e.target.result);
                     
-                    // التحقق من صحة الملف
                     if (!backupData.cars || !backupData.expenses || !backupData.workEarnings) {
                         throw new Error("ملف غير صالح");
                     }
                     
                     if (confirm(`⚠️ هل أنت متأكد من استعادة البيانات؟\nسيتم استبدال كل البيانات الحالية ببيانات النسخة الاحتياطية من تاريخ ${new Date(backupData.backupDate).toLocaleDateString('ar-EG')}`)) {
                         
-                        // حذف البيانات الحالية
                         database.ref('cars').remove();
                         database.ref('expenses').remove();
                         database.ref('workEarnings').remove();
                         
-                        // إضافة البيانات الجديدة
                         backupData.cars.forEach(car => {
                             const id = car.id || Date.now() + Math.random();
                             database.ref('cars/' + id).set({
@@ -815,14 +807,13 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // reset input
+            event.target.value = '';
         }
         
         // ==============================================
-        // تصدير احترافي Excel
+        // تصدير Excel
         // ==============================================
         function exportAdvanced() {
-            // إعداد بيانات Excel
             const carData = cars.map(car => ({
                 'رقم السيارة': car.number || '',
                 'الموديل': car.model || '',
@@ -853,7 +844,6 @@
                 };
             });
             
-            // إنشاء ورقة عمل
             const wb = XLSX.utils.book_new();
             const wsCars = XLSX.utils.json_to_sheet(carData);
             const wsExpenses = XLSX.utils.json_to_sheet(expensesData);
@@ -868,7 +858,7 @@
         }
         
         // ==============================================
-        // فتح مودال كلمة المرور للتصفير
+        // تصفير البيانات
         // ==============================================
         function openPasswordModal() {
             openModal('passwordModal');
@@ -877,7 +867,6 @@
         
         function confirmResetAll() {
             const password = document.getElementById('adminPassword').value;
-            // كلمة المرور الافتراضية - يمكنك تغييرها
             if (password === '123456') {
                 if (confirm('⚠️ تحذير نهائي! هل أنت متأكد من تصفير كل البيانات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
                     database.ref('cars').remove();
@@ -892,7 +881,7 @@
         }
         
         // ==============================================
-        // دوال مساعدة (مستمرة من الكود الأصلي)
+        // وظائف البيانات الأساسية
         // ==============================================
         function updateConnectionStatus(isConnected, message) {
             const statusDot = document.getElementById('statusDot');
@@ -942,18 +931,18 @@
             return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
         }
         
-        function getCarWorkEarningsList(carId) {
-            return workEarnings.filter(w => w.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+        function getAllCarWorkEarnings(carId) {
+            return workEarnings.filter(w => w.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date));
         }
         
-        function getCarExpensesList(carId) {
-            return expenses.filter(e => e.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+        function getAllCarExpenses(carId) {
+            return expenses.filter(e => e.carId === carId).sort((a, b) => new Date(b.date) - new Date(a.date));
         }
         
-        function filterCars(filter) {
+        function filterCars(filter, event) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
             renderCars();
         }
         
@@ -983,13 +972,133 @@
                 return;
             }
             grid.innerHTML = filteredCars.map(car => {
-                const expenses_list = getCarExpensesList(car.id);
-                const work_list = getCarWorkEarningsList(car.id);
+                const allExpenses = getAllCarExpenses(car.id);
+                const allWork = getAllCarWorkEarnings(car.id);
                 const totalExpenses = getCarExpenses(car.id);
                 const totalWork = getCarWorkEarnings(car.id);
                 const currentCapital = getCurrentCapital(car.id);
-                return `<div class="car-advanced-card"><div class="car-header-gradient"><div class="car-badge"><i class="fas fa-calendar"></i> ${new Date().getFullYear()}</div><div class="car-number-large">${car.number || 'بدون رقم'}</div></div><div class="car-content"><div class="car-info-row"><span class="car-model">${car.model || 'بدون موديل'}</span><span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}</span></div><div class="progress-stats"><div class="progress-item"><div class="progress-label">رأس المال الأصلي</div><div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div></div><div class="progress-item"><div class="progress-label">الصافي الحالي</div><div class="progress-value" style="color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'}">${currentCapital.toLocaleString()} جنيه</div></div></div>${work_list.length > 0 ? `<div class="work-history"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-briefcase"></i> آخر الأرباح</span><span onclick="showAllWork('${car.id}')" style="color:#00b09b; cursor:pointer;">عرض الكل</span></div>${work_list.map(w => `<div class="work-item"><div><div class="work-note">${w.note || 'شغل'}</div><small>${w.date || ''}</small></div><div class="work-amount">+${(w.amount || 0).toLocaleString()}</div></div>`).join('')}</div>` : ''}<div class="expenses-history"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-history"></i> آخر المصروفات</span><span onclick="showAllExpenses('${car.id}')" style="color:#c62828; cursor:pointer;">عرض الكل</span></div>${expenses_list.length > 0 ? expenses_list.map(e => `<div class="expense-item"><div><div class="expense-note">${e.note || 'مصروف'}</div><small>${e.date || ''}</small></div><div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div></div>`).join('') : '<div style="text-align:center; color:#999; padding:10px;">لا توجد مصروفات</div>'}</div><div class="net-profit" style="background:${currentCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;"><div style="display:flex; justify-content:space-between;"><span>💼 إجمالي الأرباح</span><span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span></div><div style="display:flex; justify-content:space-between;"><span>🔧 إجمالي المصروفات</span><span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span></div><div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;"><span style="font-weight:bold;">رأس المال الحالي</span><span style="font-size:1.5rem; font-weight:bold; color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'};">${currentCapital.toLocaleString()} جنيه</span></div></div><div class="car-controls"><button class="control-btn-small expense" onclick="quickExpense('${car.id}')"><i class="fas fa-wrench"></i> مصروف</button><button class="control-btn-small capital" onclick="quickCapital('${car.id}')"><i class="fas fa-coins"></i> رأس مال</button><button class="control-btn-small work" onclick="quickWork('${car.id}')"><i class="fas fa-briefcase"></i> شغل</button><button class="control-btn-small delete" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i> حذف</button></div></div></div>`;
+                
+                return `<div class="car-advanced-card">
+                    <div class="car-header-gradient">
+                        <div class="car-badge"><i class="fas fa-calendar"></i> ${new Date().getFullYear()}</div>
+                        <div class="car-number-large">${car.number || 'بدون رقم'}</div>
+                    </div>
+                    <div class="car-content">
+                        <div class="car-info-row">
+                            <span class="car-model">${car.model || 'بدون موديل'}</span>
+                            <span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}</span>
+                        </div>
+                        <div class="progress-stats">
+                            <div class="progress-item">
+                                <div class="progress-label">رأس المال الأصلي</div>
+                                <div class="progress-value">${(car.capital || 0).toLocaleString()} جنيه</div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">الصافي الحالي</div>
+                                <div class="progress-value" style="color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'}">${currentCapital.toLocaleString()} جنيه</div>
+                            </div>
+                        </div>
+                        
+                        ${allWork.length > 0 ? `
+                        <div class="work-history">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <span><i class="fas fa-briefcase"></i> سجل الأرباح</span>
+                                <button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل (${allWork.length})</button>
+                            </div>
+                            <div class="records-list">
+                                ${allWork.slice(0, 3).map(w => `
+                                <div class="work-item">
+                                    <div>
+                                        <div class="work-note">${w.note || 'شغل'}</div>
+                                        <small>${w.date || ''}</small>
+                                    </div>
+                                    <div class="work-amount">+${(w.amount || 0).toLocaleString()}</div>
+                                </div>`).join('')}
+                                ${allWork.length > 3 ? `<div style="text-align:center; margin-top:8px;"><small>+${allWork.length - 3} سجلات أخرى...</small></div>` : ''}
+                            </div>
+                        </div>` : '<div class="work-history" style="text-align:center; color:#999;">لا توجد أرباح مسجلة</div>'}
+                        
+                        ${allExpenses.length > 0 ? `
+                        <div class="expenses-history">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <span><i class="fas fa-history"></i> سجل المصروفات</span>
+                                <button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل (${allExpenses.length})</button>
+                            </div>
+                            <div class="records-list">
+                                ${allExpenses.slice(0, 3).map(e => `
+                                <div class="expense-item">
+                                    <div>
+                                        <div class="expense-note">${e.note || 'مصروف'}</div>
+                                        <small>${e.date || ''}</small>
+                                    </div>
+                                    <div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div>
+                                </div>`).join('')}
+                                ${allExpenses.length > 3 ? `<div style="text-align:center; margin-top:8px;"><small>+${allExpenses.length - 3} سجلات أخرى...</small></div>` : ''}
+                            </div>
+                        </div>` : '<div class="expenses-history" style="text-align:center; color:#999;">لا توجد مصروفات مسجلة</div>'}
+                        
+                        <div class="net-profit" style="background:${currentCapital >= 0 ? '#e8f5e9' : '#ffebee'}; padding:15px; border-radius:15px; margin:15px 0;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>💼 إجمالي الأرباح</span>
+                                <span style="color:#00b09b;">+${totalWork.toLocaleString()} جنيه</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>🔧 إجمالي المصروفات</span>
+                                <span style="color:#c62828;">-${totalExpenses.toLocaleString()} جنيه</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-top:2px dashed #ddd; padding-top:8px; margin-top:8px;">
+                                <span style="font-weight:bold;">رأس المال الحالي</span>
+                                <span style="font-size:1.5rem; font-weight:bold; color:${currentCapital >= 0 ? '#2e7d32' : '#c62828'};">${currentCapital.toLocaleString()} جنيه</span>
+                            </div>
+                        </div>
+                        
+                        <div class="car-controls">
+                            <button class="control-btn-small expense" onclick="quickExpense('${car.id}')"><i class="fas fa-wrench"></i> مصروف</button>
+                            <button class="control-btn-small capital" onclick="quickCapital('${car.id}')"><i class="fas fa-coins"></i> رأس مال</button>
+                            <button class="control-btn-small work" onclick="quickWork('${car.id}')"><i class="fas fa-briefcase"></i> شغل</button>
+                            <button class="control-btn-small delete" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
+        }
+        
+        function showAllWorkRecords(carId) {
+            const car = cars.find(c => c.id === carId);
+            const carWork = getAllCarWorkEarnings(carId);
+            let message = `💰 سجل أرباح السيارة ${car?.number || ''}\n`;
+            message += `══════════════════════════════\n\n`;
+            if (carWork.length > 0) {
+                carWork.forEach(w => {
+                    message += `📅 التاريخ: ${w.date || 'غير محدد'}\n`;
+                    message += `💰 المبلغ: ${w.amount.toLocaleString()} جنيه\n`;
+                    message += `📝 ملاحظات: ${w.note || 'شغل'}\n`;
+                    message += `──────────────────────────────\n`;
+                });
+                message += `\n✨ الإجمالي: ${getCarWorkEarnings(carId).toLocaleString()} جنيه`;
+            } else {
+                message += `لا توجد أرباح مسجلة لهذه السيارة`;
+            }
+            alert(message);
+        }
+        
+        function showAllExpensesRecords(carId) {
+            const car = cars.find(c => c.id === carId);
+            const carExpenses = getAllCarExpenses(carId);
+            let message = `🔧 سجل مصروفات السيارة ${car?.number || ''}\n`;
+            message += `══════════════════════════════\n\n`;
+            if (carExpenses.length > 0) {
+                carExpenses.forEach(e => {
+                    message += `📅 التاريخ: ${e.date || 'غير محدد'}\n`;
+                    message += `💰 المبلغ: ${e.amount.toLocaleString()} جنيه\n`;
+                    message += `📝 ملاحظات: ${e.note || 'مصروف'}\n`;
+                    message += `──────────────────────────────\n`;
+                });
+                message += `\n📊 الإجمالي: ${getCarExpenses(carId).toLocaleString()} جنيه`;
+            } else {
+                message += `لا توجد مصروفات مسجلة لهذه السيارة`;
+            }
+            alert(message);
         }
         
         function updateStats() {
@@ -1009,24 +1118,51 @@
         
         function addCar(e) {
             e.preventDefault();
-            const newCar = { id: Date.now().toString(), number: document.getElementById('carNumber').value, model: document.getElementById('carModel').value, capital: parseFloat(document.getElementById('carCapital').value) || 0, status: document.getElementById('carStatus').value };
-            database.ref('cars/' + newCar.id).set({ number: newCar.number, model: newCar.model, capital: newCar.capital, status: newCar.status });
+            const newCar = {
+                id: Date.now().toString(),
+                number: document.getElementById('carNumber').value,
+                model: document.getElementById('carModel').value,
+                capital: parseFloat(document.getElementById('carCapital').value) || 0,
+                status: document.getElementById('carStatus').value
+            };
+            database.ref('cars/' + newCar.id).set({
+                number: newCar.number,
+                model: newCar.model,
+                capital: newCar.capital,
+                status: newCar.status
+            });
             closeModal('carModal');
             e.target.reset();
-            showToast('تم إضافة السيارة', 'success');
+            showToast('✅ تم إضافة السيارة بنجاح', 'success');
         }
         
         function toggleCarStatus(id) {
             const car = cars.find(c => c.id === id);
-            if (car) database.ref('cars/' + id + '/status').set(car.status === 'working' ? 'repair' : 'working');
+            if (car) {
+                const newStatus = car.status === 'working' ? 'repair' : 'working';
+                database.ref('cars/' + id + '/status').set(newStatus);
+                showToast(`✅ تم تغيير حالة السيارة إلى ${newStatus === 'working' ? 'تعمل' : 'صيانة'}`, 'success');
+            }
         }
         
         function addExpense(e) {
             e.preventDefault();
-            database.ref('expenses/' + Date.now().toString()).set({ carId: document.getElementById('expenseCar').value, amount: parseFloat(document.getElementById('expenseAmount').value) || 0, date: document.getElementById('expenseDate').value, note: document.getElementById('expenseNote').value || 'مصروف' });
+            const expenseData = {
+                carId: document.getElementById('expenseCar').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value) || 0,
+                date: document.getElementById('expenseDate').value || new Date().toISOString().split('T')[0],
+                note: document.getElementById('expenseNote').value || 'مصروف'
+            };
+            
+            if (!expenseData.carId) {
+                showToast('❌ يرجى اختيار السيارة', 'error');
+                return;
+            }
+            
+            database.ref('expenses/' + Date.now().toString()).set(expenseData);
             closeModal('expenseModal');
             e.target.reset();
-            showToast('تم تسجيل المصروف', 'success');
+            showToast('✅ تم تسجيل المصروف بنجاح', 'success');
         }
         
         function addCapital(e) {
@@ -1034,52 +1170,90 @@
             const carId = document.getElementById('capitalCar').value;
             const amount = parseFloat(document.getElementById('capitalAmount').value) || 0;
             const car = cars.find(c => c.id === carId);
-            if (car) database.ref('cars/' + carId + '/capital').set((car.capital || 0) + amount);
+            
+            if (!carId) {
+                showToast('❌ يرجى اختيار السيارة', 'error');
+                return;
+            }
+            
+            if (car) {
+                database.ref('cars/' + carId + '/capital').set((car.capital || 0) + amount);
+                showToast(`✅ تم إضافة ${amount.toLocaleString()} جنيه إلى رأس مال السيارة`, 'success');
+            }
             closeModal('capitalModal');
             e.target.reset();
-            showToast('تم إضافة رأس المال', 'success');
         }
         
         function addWorkEarning(e) {
             e.preventDefault();
-            database.ref('workEarnings/' + Date.now().toString()).set({ carId: document.getElementById('workCar').value, amount: parseFloat(document.getElementById('workAmount').value) || 0, date: document.getElementById('workDate').value, note: document.getElementById('workNote').value || 'شغل' });
+            const workData = {
+                carId: document.getElementById('workCar').value,
+                amount: parseFloat(document.getElementById('workAmount').value) || 0,
+                date: document.getElementById('workDate').value || new Date().toISOString().split('T')[0],
+                note: document.getElementById('workNote').value || 'شغل'
+            };
+            
+            if (!workData.carId) {
+                showToast('❌ يرجى اختيار السيارة', 'error');
+                return;
+            }
+            
+            database.ref('workEarnings/' + Date.now().toString()).set(workData);
             closeModal('workModal');
             e.target.reset();
-            showToast('تم تسجيل الأرباح', 'success');
+            showToast('✅ تم تسجيل الأرباح بنجاح', 'success');
         }
         
         function deleteCar(id) {
-            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة؟')) {
+            if (confirm('⚠️ هل أنت متأكد من حذف هذه السيارة؟\nسيتم حذف جميع المصروفات والأرباح المرتبطة بها!')) {
                 database.ref('cars/' + id).remove();
-                expenses.filter(e => e.carId === id).forEach(e => database.ref('expenses/' + e.id).remove());
-                workEarnings.filter(w => w.carId === id).forEach(w => database.ref('workEarnings/' + w.id).remove());
-                showToast('تم حذف السيارة', 'warning');
+                const carExpenses = expenses.filter(e => e.carId === id);
+                const carWork = workEarnings.filter(w => w.carId === id);
+                
+                carExpenses.forEach(e => database.ref('expenses/' + e.id).remove());
+                carWork.forEach(w => database.ref('workEarnings/' + w.id).remove());
+                
+                showToast('✅ تم حذف السيارة وجميع بياناتها', 'warning');
             }
         }
         
-        function quickExpense(carId) { openModal('expenseModal'); setTimeout(() => { document.getElementById('expenseCar').value = carId; document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0]; }, 100); }
-        function quickCapital(carId) { openModal('capitalModal'); setTimeout(() => { document.getElementById('capitalCar').value = carId; document.getElementById('capitalDate').value = new Date().toISOString().split('T')[0]; }, 100); }
-        function quickWork(carId) { openModal('workModal'); setTimeout(() => { document.getElementById('workCar').value = carId; document.getElementById('workDate').value = new Date().toISOString().split('T')[0]; }, 100); }
-        
-        function showAllExpenses(carId) {
-            const car = cars.find(c => c.id === carId);
-            const carExpenses = expenses.filter(e => e.carId === carId);
-            alert(`📋 مصروفات ${car?.number || 'السيارة'}:\n\n${carExpenses.length ? carExpenses.map(e => `📅 ${e.date}: ${e.amount} جنيه\n📝 ${e.note}`).join('\n\n') : 'لا توجد مصروفات'}`);
+        function quickExpense(carId) {
+            openModal('expenseModal');
+            setTimeout(() => {
+                document.getElementById('expenseCar').value = carId;
+                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            }, 100);
         }
         
-        function showAllWork(carId) {
-            const car = cars.find(c => c.id === carId);
-            const carWork = workEarnings.filter(w => w.carId === carId);
-            alert(`💰 أرباح ${car?.number || 'السيارة'}:\n\n${carWork.length ? carWork.map(w => `📅 ${w.date}: ${w.amount} جنيه\n📝 ${w.note}`).join('\n\n') : 'لا توجد أرباح'}`);
+        function quickCapital(carId) {
+            openModal('capitalModal');
+            setTimeout(() => {
+                document.getElementById('capitalCar').value = carId;
+                document.getElementById('capitalDate').value = new Date().toISOString().split('T')[0];
+            }, 100);
         }
         
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function quickWork(carId) {
+            openModal('workModal');
+            setTimeout(() => {
+                document.getElementById('workCar').value = carId;
+                document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+            }, 100);
+        }
+        
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
         
         function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = 'toast-message';
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle');
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
@@ -1089,7 +1263,9 @@
             setupRealtimeUpdates();
             document.getElementById('searchInput').addEventListener('input', searchCars);
             document.querySelectorAll('.modal-advanced').forEach(modal => {
-                modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('active');
+                });
             });
             checkAutoBackup();
         });
