@@ -254,9 +254,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
-        .car-advanced-card:hover {
-            transform: translateY(-5px);
-        }
         .car-header-gradient {
             height: 120px;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -294,6 +291,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .car-model {
             font-size: 1.3rem;
@@ -347,6 +346,8 @@
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px dashed #ddd;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .expense-item:last-child, .work-item:last-child {
             border-bottom: none;
@@ -485,9 +486,10 @@
             text-decoration: underline;
         }
         .records-list {
-            max-height: 200px;
-            overflow-y: auto;
+            width: 100%;
         }
+        
+        /* ========== تحسين عرض الموبايل ========== */
         @media (max-width: 768px) {
             .main-header { flex-direction: column; text-align: center; }
             .logo-area { flex-direction: column; }
@@ -496,10 +498,44 @@
             .quick-actions { border-radius: 30px; }
             .quick-btn { flex: 1; justify-content: center; font-size: 0.8rem; padding: 10px 12px; }
             .toast-message { left: 15px; right: 15px; bottom: 15px; }
+            
+            /* إصلاح عرض السجلات على الموبايل */
+            .expenses-history, .work-history {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+            .records-list {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+            .expense-item, .work-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .car-number-large {
+                font-size: 1.2rem;
+                padding: 8px 15px;
+                bottom: -20px;
+            }
+            .car-header-gradient {
+                height: 100px;
+            }
+            .progress-stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .progress-value {
+                font-size: 1.2rem;
+            }
+            .car-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
+        
         @media (max-width: 480px) {
             .stats-advanced { grid-template-columns: 1fr; }
-            .car-number-large { font-size: 1.5rem; padding: 10px 20px; }
+            .car-number-large { font-size: 1rem; padding: 6px 12px; }
+            .car-model { font-size: 1rem; }
         }
     </style>
 </head>
@@ -978,6 +1014,12 @@
                 const totalWork = getCarWorkEarnings(car.id);
                 const currentCapital = getCurrentCapital(car.id);
                 
+                // عرض كل السجلات على الموبايل، وأول 5 على الكمبيوتر مع زر عرض الكل
+                const isMobile = window.innerWidth <= 768;
+                const maxRecords = isMobile ? allExpenses.length : 5;
+                const displayExpenses = allExpenses.slice(0, maxRecords);
+                const displayWork = allWork.slice(0, maxRecords);
+                
                 return `<div class="car-advanced-card">
                     <div class="car-header-gradient">
                         <div class="car-badge"><i class="fas fa-calendar"></i> ${new Date().getFullYear()}</div>
@@ -1001,12 +1043,12 @@
                         
                         ${allWork.length > 0 ? `
                         <div class="work-history">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-briefcase"></i> سجل الأرباح</span>
-                                <button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل (${allWork.length})</button>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                                <span><i class="fas fa-briefcase"></i> سجل الأرباح (${allWork.length})</span>
+                                ${!isMobile ? `<button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل</button>` : ''}
                             </div>
                             <div class="records-list">
-                                ${allWork.slice(0, 3).map(w => `
+                                ${displayWork.map(w => `
                                 <div class="work-item">
                                     <div>
                                         <div class="work-note">${w.note || 'شغل'}</div>
@@ -1014,18 +1056,18 @@
                                     </div>
                                     <div class="work-amount">+${(w.amount || 0).toLocaleString()}</div>
                                 </div>`).join('')}
-                                ${allWork.length > 3 ? `<div style="text-align:center; margin-top:8px;"><small>+${allWork.length - 3} سجلات أخرى...</small></div>` : ''}
+                                ${!isMobile && allWork.length > 5 ? `<div style="text-align:center; margin-top:8px;"><small>+${allWork.length - 5} سجلات أخرى...</small></div>` : ''}
                             </div>
                         </div>` : '<div class="work-history" style="text-align:center; color:#999;">لا توجد أرباح مسجلة</div>'}
                         
                         ${allExpenses.length > 0 ? `
                         <div class="expenses-history">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span><i class="fas fa-history"></i> سجل المصروفات</span>
-                                <button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل (${allExpenses.length})</button>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                                <span><i class="fas fa-history"></i> سجل المصروفات (${allExpenses.length})</span>
+                                ${!isMobile ? `<button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل</button>` : ''}
                             </div>
                             <div class="records-list">
-                                ${allExpenses.slice(0, 3).map(e => `
+                                ${displayExpenses.map(e => `
                                 <div class="expense-item">
                                     <div>
                                         <div class="expense-note">${e.note || 'مصروف'}</div>
@@ -1033,7 +1075,7 @@
                                     </div>
                                     <div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div>
                                 </div>`).join('')}
-                                ${allExpenses.length > 3 ? `<div style="text-align:center; margin-top:8px;"><small>+${allExpenses.length - 3} سجلات أخرى...</small></div>` : ''}
+                                ${!isMobile && allExpenses.length > 5 ? `<div style="text-align:center; margin-top:8px;"><small>+${allExpenses.length - 5} سجلات أخرى...</small></div>` : ''}
                             </div>
                         </div>` : '<div class="expenses-history" style="text-align:center; color:#999;">لا توجد مصروفات مسجلة</div>'}
                         
