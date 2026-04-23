@@ -489,12 +489,17 @@
             gap: 10px;
         }
         .view-all-btn {
-            background: transparent;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             border: none;
-            color: inherit;
+            color: white;
             cursor: pointer;
-            font-size: 0.8rem;
-            text-decoration: underline;
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+        .view-all-btn:hover {
+            transform: scale(1.05);
         }
         .records-list {
             width: 100%;
@@ -509,8 +514,6 @@
             .quick-actions { border-radius: 30px; }
             .quick-btn { flex: 1; justify-content: center; font-size: 0.8rem; padding: 10px 12px; }
             .toast-message { left: 15px; right: 15px; bottom: 15px; }
-            
-            /* إصلاح عرض السجلات على الموبايل */
             .expenses-history, .work-history {
                 max-height: none !important;
                 overflow-y: visible !important;
@@ -548,6 +551,34 @@
             .car-number-large { font-size: 1rem; padding: 6px 12px; }
             .car-model { font-size: 1rem; }
         }
+        
+        /* نافذة عرض السجلات */
+        .records-modal-content {
+            max-width: 600px;
+            width: 95%;
+            max-height: 80vh;
+        }
+        .records-list-full {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .record-item-full {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .record-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .record-amount.positive { color: #00b09b; }
+        .record-amount.negative { color: #c62828; }
     </style>
 </head>
 <body>
@@ -643,6 +674,17 @@
 
     <div id="workModal" class="modal-advanced"><div class="modal-content-advanced"><div class="modal-header"><h2><i class="fas fa-briefcase"></i> تسجيل شغل</h2><div class="close-modal" onclick="closeModal('workModal')"><i class="fas fa-times"></i></div></div><form onsubmit="addWorkEarning(event)"><div class="form-group"><label>السيارة</label><select class="form-control" id="workCar" required></select></div><div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="workAmount" required></div><div class="form-group"><label>التاريخ</label><input type="date" class="form-control" id="workDate" required></div><div class="form-group"><label>ملاحظات</label><textarea class="form-control" id="workNote" rows="2"></textarea></div><button type="submit" class="quick-btn work" style="width:100%"><i class="fas fa-save"></i> تسجيل</button></form></div></div>
 
+    <!-- مودال عرض كل السجلات -->
+    <div id="allRecordsModal" class="modal-advanced">
+        <div class="modal-content-advanced records-modal-content">
+            <div class="modal-header">
+                <h2 id="recordsModalTitle"><i class="fas fa-list"></i> السجلات</h2>
+                <div class="close-modal" onclick="closeModal('allRecordsModal')"><i class="fas fa-times"></i></div>
+            </div>
+            <div id="allRecordsContent" class="records-list-full"></div>
+        </div>
+    </div>
+
     <!-- مودال استعادة البيانات -->
     <div id="restoreModal" class="modal-advanced">
         <div class="modal-content-advanced">
@@ -730,7 +772,7 @@
         let workEarnings = [];
         let currentFilter = 'all';
         let searchTerm = '';
-        let pendingDeleteRecord = null; // لتخزين معرف السجل المراد حذفه
+        let pendingDeleteRecord = null;
 
         const BACKUP_KEY = 'shawqi_last_backup_date';
 
@@ -880,17 +922,26 @@
         }
         
         // ==============================================
-        // تصدير Excel
+        // تصدير Excel - تم إصلاح المشكلة
         // ==============================================
         function exportAdvanced() {
+            // حساب الأرباح لكل سيارة بشكل صحيح
+            const getCarWorkTotal = (carId) => {
+                return workEarnings.filter(w => w.carId === carId).reduce((sum, w) => sum + (w.amount || 0), 0);
+            };
+            
+            const getCarExpensesTotal = (carId) => {
+                return expenses.filter(e => e.carId === carId).reduce((sum, e) => sum + (e.amount || 0), 0);
+            };
+            
             const carData = cars.map(car => ({
                 'رقم السيارة': car.number || '',
                 'الموديل': car.model || '',
                 'رأس المال الأصلي': car.capital || 0,
                 'الحالة': car.status === 'working' ? 'تعمل' : 'صيانة',
-                'إجمالي المصروفات': getCarExpenses(car.id),
-                'إجمالي الأرباح': getCarWorkEarnings(car.id),
-                'رأس المال الحالي': getCurrentCapital(car.id)
+                'إجمالي المصروفات': getCarExpensesTotal(car.id),
+                'إجمالي الأرباح': getCarWorkTotal(car.id),
+                'رأس المال الحالي': (car.capital || 0) + getCarWorkTotal(car.id) - getCarExpensesTotal(car.id)
             }));
             
             const expensesData = expenses.map(e => {
@@ -918,12 +969,84 @@
             const wsExpenses = XLSX.utils.json_to_sheet(expensesData);
             const wsWork = XLSX.utils.json_to_sheet(workData);
             
+            // تحسين عرض الأعمدة
+            wsCars['!cols'] = [{wch:15},{wch:15},{wch:15},{wch:12},{wch:15},{wch:15},{wch:15}];
+            wsExpenses['!cols'] = [{wch:15},{wch:12},{wch:12},{wch:30}];
+            wsWork['!cols'] = [{wch:15},{wch:12},{wch:12},{wch:30}];
+            
             XLSX.utils.book_append_sheet(wb, wsCars, 'السيارات');
             XLSX.utils.book_append_sheet(wb, wsExpenses, 'المصروفات');
             XLSX.utils.book_append_sheet(wb, wsWork, 'الأرباح');
             
             XLSX.writeFile(wb, `shawqi_report_${new Date().toISOString().split('T')[0]}.xlsx`);
             showToast('✅ تم تصدير التقرير بنجاح', 'success');
+        }
+        
+        // ==============================================
+        // عرض كل السجلات (تم إضافة هذه الوظائف)
+        // ==============================================
+        function showAllWorkRecords(carId) {
+            const car = cars.find(c => c.id === carId);
+            const carWork = getAllCarWorkEarnings(carId);
+            
+            const modal = document.getElementById('allRecordsModal');
+            const title = document.getElementById('recordsModalTitle');
+            const content = document.getElementById('allRecordsContent');
+            
+            title.innerHTML = `<i class="fas fa-briefcase"></i> سجل أرباح السيارة ${car?.number || ''}`;
+            
+            if (carWork.length === 0) {
+                content.innerHTML = `<div style="text-align:center; padding:40px; color:#999;">لا توجد أرباح مسجلة لهذه السيارة</div>`;
+            } else {
+                let total = 0;
+                content.innerHTML = carWork.map(w => {
+                    total += w.amount;
+                    return `
+                        <div class="record-item-full">
+                            <div>
+                                <div style="font-weight:bold;">${w.note || 'شغل'}</div>
+                                <small><i class="fas fa-calendar"></i> ${w.date || 'غير محدد'}</small>
+                            </div>
+                            <div class="record-amount positive">+${(w.amount || 0).toLocaleString()} جنيه</div>
+                        </div>
+                    `;
+                }).join('');
+                content.innerHTML += `<div style="margin-top:15px; padding:15px; background:#e0f2e9; border-radius:15px; text-align:center; font-weight:bold;">الإجمالي: ${total.toLocaleString()} جنيه</div>`;
+            }
+            
+            openModal('allRecordsModal');
+        }
+        
+        function showAllExpensesRecords(carId) {
+            const car = cars.find(c => c.id === carId);
+            const carExpenses = getAllCarExpenses(carId);
+            
+            const modal = document.getElementById('allRecordsModal');
+            const title = document.getElementById('recordsModalTitle');
+            const content = document.getElementById('allRecordsContent');
+            
+            title.innerHTML = `<i class="fas fa-wrench"></i> سجل مصروفات السيارة ${car?.number || ''}`;
+            
+            if (carExpenses.length === 0) {
+                content.innerHTML = `<div style="text-align:center; padding:40px; color:#999;">لا توجد مصروفات مسجلة لهذه السيارة</div>`;
+            } else {
+                let total = 0;
+                content.innerHTML = carExpenses.map(e => {
+                    total += e.amount;
+                    return `
+                        <div class="record-item-full">
+                            <div>
+                                <div style="font-weight:bold;">${e.note || 'مصروف'}</div>
+                                <small><i class="fas fa-calendar"></i> ${e.date || 'غير محدد'}</small>
+                            </div>
+                            <div class="record-amount negative">-${(e.amount || 0).toLocaleString()} جنيه</div>
+                        </div>
+                    `;
+                }).join('');
+                content.innerHTML += `<div style="margin-top:15px; padding:15px; background:#ffebee; border-radius:15px; text-align:center; font-weight:bold;">الإجمالي: ${total.toLocaleString()} جنيه</div>`;
+            }
+            
+            openModal('allRecordsModal');
         }
         
         // ==============================================
@@ -950,7 +1073,7 @@
         }
         
         // ==============================================
-        // حذف سجل فردي (مصروف أو شغل)
+        // حذف سجل فردي
         // ==============================================
         function deleteRecord(recordId, type) {
             pendingDeleteRecord = { id: recordId, type: type };
@@ -1072,6 +1195,7 @@
                 grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; background:white; border-radius:30px;"><i class="fas fa-car" style="font-size:60px; color:#ccc;"></i><h3>لا توجد سيارات</h3></div>`;
                 return;
             }
+            
             grid.innerHTML = filteredCars.map(car => {
                 const allExpenses = getAllCarExpenses(car.id);
                 const allWork = getAllCarWorkEarnings(car.id);
@@ -1079,11 +1203,11 @@
                 const totalWork = getCarWorkEarnings(car.id);
                 const currentCapital = getCurrentCapital(car.id);
                 
-                // عرض كل السجلات على الموبايل، وأول 5 على الكمبيوتر مع زر عرض الكل
-                const isMobile = window.innerWidth <= 768;
-                const maxRecords = isMobile ? allExpenses.length : 5;
-                const displayExpenses = allExpenses.slice(0, maxRecords);
-                const displayWork = allWork.slice(0, maxRecords);
+                // عرض أول 3 سجلات فقط في البطاقة (للكمبيوتر والموبايل)
+                const displayExpenses = allExpenses.slice(0, 3);
+                const displayWork = allWork.slice(0, 3);
+                const hasMoreExpenses = allExpenses.length > 3;
+                const hasMoreWork = allWork.length > 3;
                 
                 return `<div class="car-advanced-card">
                     <div class="car-header-gradient">
@@ -1109,8 +1233,8 @@
                         ${allWork.length > 0 ? `
                         <div class="work-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                <span><i class="fas fa-briefcase"></i> سجل الأرباح (${allWork.length})</span>
-                                ${!isMobile ? `<button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل</button>` : ''}
+                                <span><i class="fas fa-briefcase"></i> آخر الأرباح (${allWork.length})</span>
+                                <button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل <i class="fas fa-arrow-left"></i></button>
                             </div>
                             <div class="records-list">
                                 ${displayWork.map(w => `
@@ -1121,18 +1245,18 @@
                                     </div>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="work-amount">+${(w.amount || 0).toLocaleString()}</div>
-                                        <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${w.id}', 'work')" title="حذف السجل"></i>
+                                        <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${w.id}', 'work')" title="حذف"></i>
                                     </div>
                                 </div>`).join('')}
-                                ${!isMobile && allWork.length > 5 ? `<div style="text-align:center; margin-top:8px;"><small>+${allWork.length - 5} سجلات أخرى...</small></div>` : ''}
+                                ${hasMoreWork ? `<div style="text-align:center; margin-top:8px;"><small class="view-all-btn" style="background:#00b09b;" onclick="showAllWorkRecords('${car.id}')">+${allWork.length - 3} سجلات أخرى...</small></div>` : ''}
                             </div>
                         </div>` : '<div class="work-history" style="text-align:center; color:#999;">لا توجد أرباح مسجلة</div>'}
                         
                         ${allExpenses.length > 0 ? `
                         <div class="expenses-history">
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                <span><i class="fas fa-history"></i> سجل المصروفات (${allExpenses.length})</span>
-                                ${!isMobile ? `<button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل</button>` : ''}
+                                <span><i class="fas fa-history"></i> آخر المصروفات (${allExpenses.length})</span>
+                                <button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل <i class="fas fa-arrow-left"></i></button>
                             </div>
                             <div class="records-list">
                                 ${displayExpenses.map(e => `
@@ -1143,10 +1267,10 @@
                                     </div>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div>
-                                        <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${e.id}', 'expense')" title="حذف السجل"></i>
+                                        <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${e.id}', 'expense')" title="حذف"></i>
                                     </div>
                                 </div>`).join('')}
-                                ${!isMobile && allExpenses.length > 5 ? `<div style="text-align:center; margin-top:8px;"><small>+${allExpenses.length - 5} سجلات أخرى...</small></div>` : ''}
+                                ${hasMoreExpenses ? `<div style="text-align:center; margin-top:8px;"><small class="view-all-btn" style="background:#e65100;" onclick="showAllExpensesRecords('${car.id}')">+${allExpenses.length - 3} سجلات أخرى...</small></div>` : ''}
                             </div>
                         </div>` : '<div class="expenses-history" style="text-align:center; color:#999;">لا توجد مصروفات مسجلة</div>'}
                         
@@ -1174,44 +1298,6 @@
                     </div>
                 </div>`;
             }).join('');
-        }
-        
-        function showAllWorkRecords(carId) {
-            const car = cars.find(c => c.id === carId);
-            const carWork = getAllCarWorkEarnings(carId);
-            let message = `💰 سجل أرباح السيارة ${car?.number || ''}\n`;
-            message += `══════════════════════════════\n\n`;
-            if (carWork.length > 0) {
-                carWork.forEach(w => {
-                    message += `📅 التاريخ: ${w.date || 'غير محدد'}\n`;
-                    message += `💰 المبلغ: ${w.amount.toLocaleString()} جنيه\n`;
-                    message += `📝 ملاحظات: ${w.note || 'شغل'}\n`;
-                    message += `──────────────────────────────\n`;
-                });
-                message += `\n✨ الإجمالي: ${getCarWorkEarnings(carId).toLocaleString()} جنيه`;
-            } else {
-                message += `لا توجد أرباح مسجلة لهذه السيارة`;
-            }
-            alert(message);
-        }
-        
-        function showAllExpensesRecords(carId) {
-            const car = cars.find(c => c.id === carId);
-            const carExpenses = getAllCarExpenses(carId);
-            let message = `🔧 سجل مصروفات السيارة ${car?.number || ''}\n`;
-            message += `══════════════════════════════\n\n`;
-            if (carExpenses.length > 0) {
-                carExpenses.forEach(e => {
-                    message += `📅 التاريخ: ${e.date || 'غير محدد'}\n`;
-                    message += `💰 المبلغ: ${e.amount.toLocaleString()} جنيه\n`;
-                    message += `📝 ملاحظات: ${e.note || 'مصروف'}\n`;
-                    message += `──────────────────────────────\n`;
-                });
-                message += `\n📊 الإجمالي: ${getCarExpenses(carId).toLocaleString()} جنيه`;
-            } else {
-                message += `لا توجد مصروفات مسجلة لهذه السيارة`;
-            }
-            alert(message);
         }
         
         function updateStats() {
