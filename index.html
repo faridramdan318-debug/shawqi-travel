@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
+        /* ===== نفس الأنماط السابقة مع إضافة تحسينات ===== */
         * {
             margin: 0;
             padding: 0;
@@ -80,21 +81,69 @@
             padding: 10px 20px;
             background: #f8f9fa;
             border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .connection-status:hover {
+            background: #e8e8e8;
         }
         .status-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+        .status-dot.connected {
             background: #4caf50;
             animation: pulse 2s infinite;
         }
+        .status-dot.connecting {
+            background: #ff9800;
+            animation: pulse 0.5s infinite;
+        }
         .status-dot.offline {
             background: #dc3545;
+            animation: none;
+        }
+        .status-dot.error {
+            background: #f44336;
+            animation: pulse 0.3s infinite;
         }
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .connection-text {
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .connection-text.offline {
+            color: #dc3545;
+        }
+        .connection-text.connecting {
+            color: #ff9800;
+        }
+        .connection-text.online {
+            color: #4caf50;
+        }
+        .retry-btn {
+            background: none;
+            border: none;
+            color: #1e3c72;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .retry-btn:hover {
+            background: #e0e0e0;
+            transform: rotate(180deg);
+        }
+        .retry-btn.visible {
+            display: inline-block;
         }
         .stats-advanced {
             display: grid;
@@ -174,6 +223,11 @@
         .quick-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .quick-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
         }
         .search-section {
             background: white;
@@ -302,8 +356,6 @@
             background: #f8d7da;
             color: #721c24;
         }
-        
-        /* ===== قسم الزيت المحسن مع الدفع ===== */
         .oil-section {
             background: linear-gradient(135deg, #fff8e1, #ffe0b2);
             border-radius: 14px;
@@ -351,8 +403,6 @@
         .oil-stat-item .value.success { color: #2e7d32; }
         .oil-stat-item .value.orange { color: #e65100; }
         .oil-stat-item .value.paid { color: #1565c0; }
-        
-        /* بار السداد */
         .payment-bar {
             margin-top: 6px;
             background: #e0e0e0;
@@ -376,7 +426,6 @@
             font-weight: bold;
             color: #333;
         }
-        
         .oil-actions {
             display: flex;
             gap: 4px;
@@ -407,8 +456,6 @@
         .oil-action-btn:hover {
             transform: scale(1.05);
         }
-        
-        /* قسم قطع الغيار */
         .parts-section {
             background: #e3f2fd;
             border-radius: 12px;
@@ -446,8 +493,6 @@
         }
         .part-status.working { background: #d4edda; color: #155724; }
         .part-status.broken { background: #f8d7da; color: #721c24; }
-        
-        /* سجلات */
         .expenses-history, .work-history, .capital-history {
             background: #f8f9fa;
             border-radius: 10px;
@@ -483,7 +528,6 @@
             background: #ffebee;
             color: #c62828;
         }
-        
         .car-controls {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -510,8 +554,6 @@
         .control-btn-small.oil { background: #fff3e0; color: #bf360c; }
         .control-btn-small.parts { background: #e3f2fd; color: #0d47a1; }
         .control-btn-small.delete-range { background: #fce4ec; color: #880e4f; }
-        
-        /* مودالات */
         .modal-advanced {
             display: none;
             position: fixed;
@@ -587,10 +629,6 @@
             font-size: 0.65rem;
             color: #999;
             margin-top: 2px;
-        }
-        .form-divider {
-            border-top: 2px dashed #e0e0e0;
-            margin: 12px 0;
         }
         .toast-message {
             position: fixed;
@@ -694,6 +732,42 @@
         .record-amount.neutral { color: #f57c00; }
         .record-amount.paid { color: #1565c0; }
         
+        /* تحميل مؤقت */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e0e0e0;
+            border-top-color: #1e3c72;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
         @media (max-width: 768px) {
             .main-header { flex-direction: column; text-align: center; }
             .logo-area { flex-direction: column; }
@@ -705,6 +779,8 @@
             .car-controls { grid-template-columns: repeat(2, 1fr); }
             .car-number-large { font-size: 1rem; padding: 4px 12px; bottom: -16px; }
             .car-header-gradient { height: 70px; }
+            .connection-status { padding: 6px 12px; }
+            .connection-text { font-size: 0.7rem; }
         }
         
         @media (max-width: 480px) {
@@ -717,8 +793,14 @@
     </style>
 </head>
 <body>
+    <!-- تحميل مؤقت -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">جاري تحميل البيانات...</div>
+    </div>
+
     <div class="top-bar">
-        <i class="fas fa-shield-alt"></i> الشوقي ترافيل · نظام الزيت المتقدم مع إدارة الدفع
+        <i class="fas fa-shield-alt"></i> الشوقي ترافيل · نظام إدارة الزيت المتقدم
     </div>
 
     <div class="container">
@@ -730,9 +812,10 @@
                     <p>نظام متكامل · زيت · قطع غيار · دفع</p>
                 </div>
             </div>
-            <div class="connection-status">
-                <span class="status-dot" id="statusDot"></span>
-                <span id="connectionText">جاري التحميل...</span>
+            <div class="connection-status" id="connectionStatus" onclick="retryConnection()" title="انقر لإعادة المحاولة">
+                <span class="status-dot connecting" id="statusDot"></span>
+                <span class="connection-text connecting" id="connectionText">جاري التحميل...</span>
+                <i class="fas fa-sync-alt retry-btn" id="retryBtn"></i>
             </div>
         </div>
 
@@ -804,8 +887,8 @@
         <div id="carsAdvancedGrid" class="cars-advanced-grid"></div>
     </div>
 
-    <!-- ===== مودالات ===== -->
-
+    <!-- ===== مودالات (نفس السابق) ===== -->
+    
     <!-- سيارة جديدة -->
     <div id="carModal" class="modal-advanced">
         <div class="modal-content-advanced">
@@ -880,7 +963,7 @@
         </div>
     </div>
 
-    <!-- ===== مودال الزيت المتقدم مع الدفع ===== -->
+    <!-- مودال الزيت -->
     <div id="oilModal" class="modal-advanced">
         <div class="modal-content-advanced">
             <div class="modal-header">
@@ -900,44 +983,32 @@
                         <option value="use">🔧 تغيير زيت (استخدام)</option>
                     </select>
                 </div>
-                
-                <!-- حقل شراء جركن -->
                 <div id="oilBuyFields">
                     <div class="form-group">
                         <label>سعة الجركن (كيلو)</label>
                         <input type="number" step="0.1" class="form-control" id="oilBuyQuantity" placeholder="مثال: 20">
-                        <div class="form-hint">كمية الزيت في الجركن الجديد</div>
                     </div>
                     <div class="form-group">
                         <label>إجمالي سعر الجركن (جنيه)</label>
                         <input type="number" class="form-control" id="oilTotalCost" placeholder="مثال: 4100">
-                        <div class="form-hint">السعر الكامل للجركن</div>
                     </div>
                     <div class="form-group">
                         <label>المبلغ المدفوع الآن (جنيه)</label>
                         <input type="number" class="form-control" id="oilPaidNow" placeholder="مثال: 1000">
-                        <div class="form-hint">المبلغ الذي دفعته الآن (سيظهر باقي المبلغ)</div>
                     </div>
                 </div>
-                
-                <!-- حقل تسديد دفعة -->
                 <div id="oilPayFields" style="display:none;">
                     <div class="form-group">
                         <label>المبلغ المدفوع (جنيه)</label>
                         <input type="number" class="form-control" id="oilPayAmount" placeholder="مثال: 500">
-                        <div class="form-hint">المبلغ الذي تسدده الآن</div>
                     </div>
                 </div>
-                
-                <!-- حقل استخدام زيت -->
                 <div id="oilUseFields" style="display:none;">
                     <div class="form-group">
                         <label>كمية الزيت المستخدمة (كيلو)</label>
                         <input type="number" step="0.1" class="form-control" id="oilUseQuantity" placeholder="مثال: 4">
-                        <div class="form-hint">كمية الزيت التي تم تغييرها</div>
                     </div>
                 </div>
-                
                 <div class="form-group">
                     <label>التاريخ</label>
                     <input type="date" class="form-control" id="oilDate" required>
@@ -1066,7 +1137,7 @@
 
     <script>
         // ==============================================
-        // Firebase
+        // Firebase Configuration
         // ==============================================
         const firebaseConfig = {
             apiKey: "AIzaSyB9WZIZ3PUoeH6AokLtrIybsYdG2SxuLUk",
@@ -1077,8 +1148,6 @@
             messagingSenderId: "173120244840",
             appId: "1:173120244840:web:8968e4adc4f92a1e2a3fdd"
         };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
 
         // ==============================================
         // المتغيرات
@@ -1086,10 +1155,208 @@
         let cars = [], expenses = [], workEarnings = [], capitalRecords = [], oilRecords = [], partsRecords = [];
         let currentFilter = 'all', searchTerm = '', pendingDeleteRecord = null, pendingDeleteCarId = null;
         let timeFilterActive = false, filterFromDate = null, filterToDate = null;
+        let isConnected = false;
+        let connectionAttempts = 0;
+        const MAX_RETRIES = 5;
         const BACKUP_KEY = 'shawqi_last_backup_date';
+        const LOCAL_STORAGE_KEY = 'shawqi_local_data';
 
         // ==============================================
-        // دوال الزيت المحسنة مع الدفع
+        // تهيئة Firebase مع معالجة الأخطاء
+        // ==============================================
+        let database = null;
+        let firebaseInitialized = false;
+
+        function initFirebase() {
+            try {
+                if (!firebase.apps || firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                database = firebase.database();
+                firebaseInitialized = true;
+                updateConnectionStatus('connecting', 'جاري الاتصال...');
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                updateConnectionStatus('error', 'خطأ في التهيئة');
+                return false;
+            }
+        }
+
+        // ==============================================
+        // تحسين حالة الاتصال
+        // ==============================================
+        function updateConnectionStatus(status, message) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('connectionText');
+            const retryBtn = document.getElementById('retryBtn');
+
+            // إزالة جميع الكلاسات
+            dot.className = 'status-dot';
+            text.className = 'connection-text';
+            
+            if (status === 'connected') {
+                dot.classList.add('connected');
+                text.classList.add('online');
+                text.innerText = message || '✅ متصل';
+                retryBtn.classList.remove('visible');
+                isConnected = true;
+            } else if (status === 'connecting') {
+                dot.classList.add('connecting');
+                text.classList.add('connecting');
+                text.innerText = message || '⏳ جاري التحميل...';
+                retryBtn.classList.remove('visible');
+                isConnected = false;
+            } else if (status === 'offline') {
+                dot.classList.add('offline');
+                text.classList.add('offline');
+                text.innerText = message || '📡 غير متصل';
+                retryBtn.classList.add('visible');
+                isConnected = false;
+            } else if (status === 'error') {
+                dot.classList.add('error');
+                text.classList.add('offline');
+                text.innerText = message || '❌ خطأ في الاتصال';
+                retryBtn.classList.add('visible');
+                isConnected = false;
+            }
+
+            // حفظ الحالة في localStorage
+            try {
+                localStorage.setItem('shawqi_connection_status', JSON.stringify({ status, message, time: Date.now() }));
+            } catch (e) {}
+        }
+
+        // ==============================================
+        // إعادة محاولة الاتصال
+        // ==============================================
+        function retryConnection() {
+            if (isConnected) return;
+            updateConnectionStatus('connecting', '⏳ جاري إعادة المحاولة...');
+            connectionAttempts = 0;
+            setupRealtimeUpdates();
+        }
+
+        // ==============================================
+        // تحميل البيانات المحلية في حالة انقطاع النت
+        // ==============================================
+        function loadLocalData() {
+            try {
+                const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    cars = data.cars || [];
+                    expenses = data.expenses || [];
+                    workEarnings = data.workEarnings || [];
+                    capitalRecords = data.capitalRecords || [];
+                    oilRecords = data.oilRecords || [];
+                    partsRecords = data.partsRecords || [];
+                    renderAll();
+                    updateConnectionStatus('offline', '📡 بيانات محلية (غير متصل)');
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        // ==============================================
+        // حفظ البيانات محلياً
+        // ==============================================
+        function saveLocalData() {
+            try {
+                const data = { cars, expenses, workEarnings, capitalRecords, oilRecords, partsRecords, timestamp: Date.now() };
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        // ==============================================
+        // المزامنة مع Firebase مع معالجة الأخطاء
+        // ==============================================
+        function setupRealtimeUpdates() {
+            if (!firebaseInitialized) {
+                if (!initFirebase()) {
+                    loadLocalData();
+                    return;
+                }
+            }
+
+            if (!database) {
+                loadLocalData();
+                return;
+            }
+
+            let loadedCount = 0;
+            const totalRefs = 6;
+            let hasError = false;
+
+            // إظهار التحميل
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            const refs = {
+                cars: 'cars',
+                expenses: 'expenses',
+                workEarnings: 'workEarnings',
+                capitalRecords: 'capitalRecords',
+                oilRecords: 'oilRecords',
+                partsRecords: 'partsRecords'
+            };
+
+            Object.entries(refs).forEach(([key, ref]) => {
+                try {
+                    database.ref(ref).on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (key === 'cars') cars = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        else if (key === 'expenses') expenses = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        else if (key === 'workEarnings') workEarnings = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        else if (key === 'capitalRecords') capitalRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        else if (key === 'oilRecords') oilRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        else if (key === 'partsRecords') partsRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                        
+                        loadedCount++;
+                        saveLocalData();
+                        
+                        if (loadedCount >= totalRefs) {
+                            document.getElementById('loadingOverlay').classList.remove('active');
+                            updateConnectionStatus('connected', '✅ متصل ومتزامن');
+                            renderAll();
+                        }
+                    }, (error) => {
+                        console.error(`Error loading ${ref}:`, error);
+                        hasError = true;
+                        loadedCount++;
+                        if (loadedCount >= totalRefs) {
+                            document.getElementById('loadingOverlay').classList.remove('active');
+                            if (!loadLocalData()) {
+                                updateConnectionStatus('error', '❌ فشل التحميل');
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Error setting up ${ref}:`, error);
+                    hasError = true;
+                    loadedCount++;
+                    if (loadedCount >= totalRefs) {
+                        document.getElementById('loadingOverlay').classList.remove('active');
+                        if (!loadLocalData()) {
+                            updateConnectionStatus('error', '❌ فشل التحميل');
+                        }
+                    }
+                }
+            });
+
+            // مهلة في حالة عدم الاستجابة
+            setTimeout(() => {
+                if (loadedCount < totalRefs) {
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                    if (!loadLocalData()) {
+                        updateConnectionStatus('offline', '⏰ مهلة الاتصال');
+                    }
+                }
+            }, 15000);
+        }
+
+        // ==============================================
+        // دوال الزيت (نفس السابق)
         // ==============================================
         function toggleOilFields() {
             const type = document.getElementById('oilType').value;
@@ -1104,12 +1371,7 @@
             const payments = records.filter(o => o.type === 'pay');
             const uses = records.filter(o => o.type === 'use');
             
-            // حساب المشتريات
-            let totalBought = 0;
-            let totalCost = 0;
-            let totalPaid = 0;
-            let currentJarSize = 0;
-            let currentJarCost = 0;
+            let totalBought = 0, totalCost = 0, totalPaid = 0, currentJarSize = 0, currentJarCost = 0;
             
             if (purchases.length > 0) {
                 const sorted = [...purchases].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1120,52 +1382,35 @@
                 totalCost = purchases.reduce((s, o) => s + (o.totalCost || 0), 0);
             }
             
-            // حساب المدفوعات
             totalPaid = payments.reduce((s, o) => s + (o.amount || 0), 0);
-            // المدفوعات المرتبطة بشراء الجركن الحالي
             const paidForCurrent = payments.reduce((s, o) => s + (o.amount || 0), 0);
-            
             const remainingPayment = currentJarCost - paidForCurrent;
             const isFullyPaid = remainingPayment <= 0;
-            
             const totalUsed = uses.reduce((s, o) => s + (o.quantity || 0), 0);
             const remaining = totalBought - totalUsed;
             const costPerKg = totalBought > 0 ? totalCost / totalBought : 0;
             const remainingCost = remaining * costPerKg;
             const usagePercent = totalBought > 0 ? (totalUsed / totalBought) * 100 : 0;
-            
             const car = cars.find(c => c.id === carId);
             const oilCapacity = car?.oilCapacity || 4;
             const possibleChanges = remaining > 0 ? Math.floor(remaining / oilCapacity) : 0;
-            
             const lastUse = uses.length > 0 ? uses.sort((a, b) => new Date(b.date) - new Date(a.date))[0] : null;
-            const lastPayment = payments.length > 0 ? payments.sort((a, b) => new Date(b.date) - new Date(a.date))[0] : null;
             
             return {
-                totalBought,
-                totalUsed,
-                remaining,
-                totalCost,
-                costPerKg,
-                remainingCost,
-                usagePercent,
-                currentJarSize,
-                currentJarCost,
-                totalPaid,
-                remainingPayment: Math.max(0, remainingPayment),
-                isFullyPaid,
-                paidPercent: currentJarCost > 0 ? (paidForCurrent / currentJarCost) * 100 : 0,
-                possibleChanges,
-                lastUseDate: lastUse?.date || null,
-                lastUseNote: lastUse?.note || null,
-                lastUseQty: lastUse?.quantity || 0,
-                lastPaymentDate: lastPayment?.date || null,
-                lastPaymentAmount: lastPayment?.amount || 0
+                totalBought, totalUsed, remaining, totalCost, costPerKg, remainingCost, usagePercent,
+                currentJarSize, currentJarCost, totalPaid, remainingPayment: Math.max(0, remainingPayment),
+                isFullyPaid, paidPercent: currentJarCost > 0 ? (paidForCurrent / currentJarCost) * 100 : 0,
+                possibleChanges, lastUseDate: lastUse?.date || null, lastUseQty: lastUse?.quantity || 0
             };
         }
 
         function addOilRecord(e) {
             e.preventDefault();
+            if (!isConnected) {
+                showToast('⚠️ لا يوجد اتصال بالإنترنت، حاول مرة أخرى', 'error');
+                return;
+            }
+            
             const type = document.getElementById('oilType').value;
             const carId = document.getElementById('oilCar').value;
             const date = document.getElementById('oilDate').value || new Date().toISOString().split('T')[0];
@@ -1173,13 +1418,12 @@
 
             if (!carId) { showToast('❌ اختر السيارة', 'error'); return; }
 
-            let quantity = 0, cost = 0, totalCost = 0, amount = 0;
+            let quantity = 0, totalCost = 0, amount = 0;
 
             if (type === 'buy') {
                 quantity = parseFloat(document.getElementById('oilBuyQuantity').value) || 0;
                 totalCost = parseFloat(document.getElementById('oilTotalCost').value) || 0;
                 amount = parseFloat(document.getElementById('oilPaidNow').value) || 0;
-                
                 if (quantity <= 0) { showToast('❌ أدخل سعة الجركن', 'error'); return; }
                 if (totalCost <= 0) { showToast('❌ أدخل سعر الجركن', 'error'); return; }
                 if (amount <= 0) { showToast('❌ أدخل المبلغ المدفوع', 'error'); return; }
@@ -1188,7 +1432,6 @@
                 const data = { carId, type, quantity, totalCost, amount, date, note: note || `شراء جركن ${quantity}ك بـ ${totalCost}ج - دفع ${amount}ج` };
                 database.ref('oilRecords/' + Date.now().toString()).set(data);
                 
-                // إذا كان هناك باقي، نسجل دفعة تلقائية
                 const remaining = totalCost - amount;
                 if (remaining > 0) {
                     const payNote = `دفعة تلقائية للجركن - باقي ${remaining}ج`;
@@ -1202,27 +1445,22 @@
             } else if (type === 'pay') {
                 amount = parseFloat(document.getElementById('oilPayAmount').value) || 0;
                 if (amount <= 0) { showToast('❌ أدخل المبلغ', 'error'); return; }
-                
-                // التحقق من المتبقي
                 const stats = getCarOilStats(carId);
-                if (amount > stats.remainingPayment) {
+                if (amount > stats.remainingPayment && stats.remainingPayment > 0) {
                     showToast(`⚠️ المتبقي للدفع ${stats.remainingPayment.toFixed(0)} ج فقط`, 'error');
                     return;
                 }
-                
                 const data = { carId, type, amount, date, note: note || `تسديد دفعة ${amount}ج` };
                 database.ref('oilRecords/' + Date.now().toString()).set(data);
                 
             } else if (type === 'use') {
                 quantity = parseFloat(document.getElementById('oilUseQuantity').value) || 0;
                 if (quantity <= 0) { showToast('❌ أدخل الكمية المستخدمة', 'error'); return; }
-                
                 const stats = getCarOilStats(carId);
                 if (stats.remaining < quantity) {
                     showToast(`⚠️ الكمية المتبقية ${stats.remaining.toFixed(1)} ك فقط`, 'error');
                     return;
                 }
-                
                 const data = { carId, type, quantity, date, note: note || `تغيير زيت ${quantity}ك` };
                 database.ref('oilRecords/' + Date.now().toString()).set(data);
             }
@@ -1240,6 +1478,10 @@
 
         function addPart(e) {
             e.preventDefault();
+            if (!isConnected) {
+                showToast('⚠️ لا يوجد اتصال بالإنترنت', 'error');
+                return;
+            }
             const carId = document.getElementById('partsCar').value;
             const name = document.getElementById('partName').value;
             const status = document.getElementById('partStatus').value;
@@ -1252,11 +1494,13 @@
         }
 
         function togglePartStatus(id, current) {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             database.ref('partsRecords/' + id + '/status').set(current === 'working' ? 'broken' : 'working');
             showToast('✅ تم التحديث', 'success');
         }
 
         function deletePart(id) {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             if (confirm('حذف القطعة؟')) {
                 database.ref('partsRecords/' + id).remove();
                 showToast('✅ تم الحذف', 'warning');
@@ -1304,6 +1548,7 @@
 
         function deleteCarRecordsByRange(e) {
             e.preventDefault();
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const from = document.getElementById('deleteCarFromDate').value;
             const to = document.getElementById('deleteCarToDate').value;
             const type = document.getElementById('deleteCarRangeType').value;
@@ -1328,10 +1573,12 @@
         // النسخ الاحتياطي
         // ==============================================
         function checkAutoBackup() {
-            const last = localStorage.getItem(BACKUP_KEY);
-            if (!last) { showBackupNotification('ننصح بعمل نسخة احتياطية'); return; }
-            const days = Math.floor((new Date() - new Date(last)) / (1000*60*60*24));
-            if (days >= 10) showBackupNotification(`مرت ${days} يوم على آخر نسخة`);
+            try {
+                const last = localStorage.getItem(BACKUP_KEY);
+                if (!last) { showBackupNotification('ننصح بعمل نسخة احتياطية'); return; }
+                const days = Math.floor((new Date() - new Date(last)) / (1000*60*60*24));
+                if (days >= 10) showBackupNotification(`مرت ${days} يوم على آخر نسخة`);
+            } catch (e) {}
         }
 
         function showBackupNotification(msg) {
@@ -1348,17 +1595,19 @@
             link.href = URL.createObjectURL(blob);
             link.download = `shawqi_backup_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+            try { localStorage.setItem(BACKUP_KEY, new Date().toISOString()); } catch(e) {}
             document.getElementById('backupNotification').style.display = 'none';
             showToast('✅ تم حفظ النسخة', 'success');
         }
 
         function openRestoreModal() {
             openModal('restoreModal');
-            const last = localStorage.getItem(BACKUP_KEY);
-            document.getElementById('backupFilesList').innerHTML = last ?
-                `<div style="background:#e8f5e9;padding:8px;border-radius:8px;">آخر نسخة: ${new Date(last).toLocaleDateString('ar-EG')}</div>` :
-                `<div style="background:#fff3e0;padding:8px;border-radius:8px;">لا توجد نسخ</div>`;
+            try {
+                const last = localStorage.getItem(BACKUP_KEY);
+                document.getElementById('backupFilesList').innerHTML = last ?
+                    `<div style="background:#e8f5e9;padding:8px;border-radius:8px;">آخر نسخة: ${new Date(last).toLocaleDateString('ar-EG')}</div>` :
+                    `<div style="background:#fff3e0;padding:8px;border-radius:8px;">لا توجد نسخ</div>`;
+            } catch(e) {}
         }
 
         function restoreFromBackup(e) {
@@ -1370,6 +1619,10 @@
                     const data = JSON.parse(ev.target.result);
                     if (!data.cars) throw new Error('ملف غير صالح');
                     if (confirm(`استعادة بيانات من ${new Date(data.backupDate).toLocaleDateString('ar-EG')}؟`)) {
+                        if (!isConnected) {
+                            showToast('⚠️ لا يوجد اتصال بالإنترنت للاستعادة', 'error');
+                            return;
+                        }
                         ['cars','expenses','workEarnings','capitalRecords','oilRecords','partsRecords'].forEach(ref => database.ref(ref).remove());
                         data.cars.forEach(c => database.ref('cars/' + (c.id || Date.now()+Math.random())).set({ number: c.number, model: c.model, capital: c.capital, status: c.status, oilCapacity: c.oilCapacity || 4 }));
                         data.expenses?.forEach(e => database.ref('expenses/' + (e.id || Date.now()+Math.random())).set({ carId: e.carId, amount: e.amount, date: e.date, note: e.note }));
@@ -1403,6 +1656,7 @@
         // ==============================================
         function openPasswordModal() { openModal('passwordModal'); document.getElementById('adminPassword').value = ''; }
         function confirmResetAll() {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             if (document.getElementById('adminPassword').value === '123456' && confirm('تصفير كل البيانات؟')) {
                 ['cars','expenses','workEarnings','capitalRecords','oilRecords','partsRecords'].forEach(ref => database.ref(ref).remove());
                 closeModal('passwordModal');
@@ -1417,6 +1671,7 @@
         }
 
         function confirmDeleteRecord() {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             if (document.getElementById('deleteRecordPassword').value !== 'farid22') {
                 showToast('❌ كلمة المرور غير صحيحة', 'error');
                 return;
@@ -1428,24 +1683,6 @@
             closeModal('deleteRecordPasswordModal');
             pendingDeleteRecord = null;
             showToast('✅ تم الحذف', 'success');
-        }
-
-        // ==============================================
-        // المزامنة مع Firebase
-        // ==============================================
-        function setupRealtimeUpdates() {
-            ['cars','expenses','workEarnings','capitalRecords','oilRecords','partsRecords'].forEach(key => {
-                database.ref(key).on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (key === 'cars') cars = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    else if (key === 'expenses') expenses = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    else if (key === 'workEarnings') workEarnings = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    else if (key === 'capitalRecords') capitalRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    else if (key === 'oilRecords') oilRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    else if (key === 'partsRecords') partsRecords = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-                    renderAll();
-                });
-            });
         }
 
         // ==============================================
@@ -1494,7 +1731,6 @@
             grid.innerHTML = filtered.map(car => {
                 const expList = getCarExpList(car.id);
                 const workList = getCarWorkList(car.id);
-                const capList = getCarCapitalList(car.id);
                 const totalExp = getCarExp(car.id);
                 const totalWork = getCarWork(car.id);
                 const extraCap = getCarExtraCapital(car.id);
@@ -1503,8 +1739,6 @@
                 const oilStats = getCarOilStats(car.id);
                 const parts = getCarParts(car.id);
                 const filterBadge = timeFilterActive ? `<span class="time-filter-badge" style="font-size:0.5rem;">مفلتر</span>` : '';
-
-                // حالة الدفع
                 const payStatus = oilStats.isFullyPaid ? '✅ مسدد' : `⚠️ باقي ${oilStats.remainingPayment.toFixed(0)} ج`;
                 const payColor = oilStats.isFullyPaid ? '#2e7d32' : '#c62828';
 
@@ -1530,7 +1764,6 @@
                             </div>
                         </div>
 
-                        <!-- ===== قسم الزيت المحسن مع الدفع ===== -->
                         <div class="oil-section">
                             <div class="oil-header">
                                 <span><i class="fas fa-oil-can"></i> الزيت</span>
@@ -1547,7 +1780,6 @@
                                 <div class="oil-stat-item"><span class="label">متبقي للدفع</span><span class="value" style="color:${payColor};">${oilStats.remainingPayment.toFixed(0)}ج</span></div>
                                 <div class="oil-stat-item"><span class="label">الحالة</span><span class="value" style="color:${payColor};font-size:0.7rem;">${payStatus}</span></div>
                             </div>
-                            <!-- بار السداد -->
                             <div class="payment-bar">
                                 <div class="payment-bar-fill" style="width:${Math.min(oilStats.paidPercent, 100)}%;"></div>
                                 <div class="payment-bar-text">${oilStats.paidPercent.toFixed(0)}% مدفوع</div>
@@ -1559,7 +1791,6 @@
                             </div>
                         </div>
 
-                        <!-- قطع الغيار -->
                         <div class="parts-section">
                             <div class="parts-header">
                                 <span><i class="fas fa-cogs"></i> قطع الغيار (${parts.length})</span>
@@ -1579,7 +1810,6 @@
                             ${parts.length > 2 ? `<div style="text-align:center;font-size:0.6rem;color:#666;">+ ${parts.length - 2} قطع</div>` : ''}
                         </div>
 
-                        <!-- سجلات -->
                         ${workList.length > 0 ? `
                         <div class="work-history">
                             <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
@@ -1768,6 +1998,7 @@
         // ==============================================
         function addCar(e) {
             e.preventDefault();
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const data = {
                 number: document.getElementById('carNumber').value,
                 model: document.getElementById('carModel').value,
@@ -1782,6 +2013,7 @@
         }
 
         function toggleCarStatus(id) {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const car = cars.find(c => c.id === id);
             if (car) {
                 const ns = car.status === 'working' ? 'repair' : 'working';
@@ -1792,6 +2024,7 @@
 
         function addExpense(e) {
             e.preventDefault();
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const data = {
                 carId: document.getElementById('expenseCar').value,
                 amount: parseFloat(document.getElementById('expenseAmount').value) || 0,
@@ -1807,6 +2040,7 @@
 
         function addCapital(e) {
             e.preventDefault();
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const data = {
                 carId: document.getElementById('capitalCar').value,
                 amount: parseFloat(document.getElementById('capitalAmount').value) || 0,
@@ -1822,6 +2056,7 @@
 
         function addWorkEarning(e) {
             e.preventDefault();
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             const data = {
                 carId: document.getElementById('workCar').value,
                 amount: parseFloat(document.getElementById('workAmount').value) || 0,
@@ -1836,6 +2071,7 @@
         }
 
         function deleteCar(id) {
+            if (!isConnected) { showToast('⚠️ لا يوجد اتصال', 'error'); return; }
             if (confirm('حذف السيارة وكل بياناتها؟')) {
                 database.ref('cars/' + id).remove();
                 ['expenses','workEarnings','capitalRecords','oilRecords','partsRecords'].forEach(ref => {
@@ -1847,7 +2083,7 @@
         }
 
         // ==============================================
-        // دوال سريعة للزيت
+        // دوال سريعة
         // ==============================================
         function quickOilBuy(id) {
             openModal('oilModal');
@@ -1905,14 +2141,46 @@
         // بدء التشغيل
         // ==============================================
         document.addEventListener('DOMContentLoaded', () => {
+            // تهيئة Firebase
+            initFirebase();
+            
+            // بدء المزامنة
             setupRealtimeUpdates();
+            
+            // البحث
             document.getElementById('searchInput').addEventListener('input', searchCars);
+            
+            // إغلاق المودالات بالضغط خارجها
             document.querySelectorAll('.modal-advanced').forEach(m => {
                 m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('active'); });
             });
-            checkAutoBackup();
+            
+            // التحقق من النسخ الاحتياطي
+            setTimeout(checkAutoBackup, 2000);
+            
+            // إظهار حقول الزيت
             toggleOilFields();
+
+            // استعادة حالة الاتصال السابقة
+            try {
+                const savedStatus = localStorage.getItem('shawqi_connection_status');
+                if (savedStatus) {
+                    const data = JSON.parse(savedStatus);
+                    if (data.status === 'connected') {
+                        updateConnectionStatus('connected', '✅ متصل');
+                    } else if (Date.now() - data.time < 30000) {
+                        updateConnectionStatus(data.status, data.message);
+                    }
+                }
+            } catch (e) {}
         });
+
+        // محاولة إعادة الاتصال كل 30 ثانية في حالة الانقطاع
+        setInterval(() => {
+            if (!isConnected && firebaseInitialized) {
+                retryConnection();
+            }
+        }, 30000);
     </script>
 </body>
 </html>
