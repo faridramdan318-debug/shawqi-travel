@@ -12,48 +12,19 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js">
     </script>
     <style>
-        /* ===== خلفية الصورة الثابتة (تم التعديل هنا) ===== */
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
-
+        /* ===== جميع الستايلات السابقة كما هي ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
         }
-
         body {
+            background: #f0f2f5;
             min-height: 100vh;
-            /* تم وضع صورة الخلفية هنا */
-            background-image: url('background.jpg'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            overflow-x: hidden;
-            position: relative;
         }
-
-        /* طبقة شفافة فوق الخلفية عشان الكلام يقرا عليها */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 14, 26, 0.75); /* نسبة العتمة (شفافية) */
-            backdrop-filter: blur(2px); /* تأثير ضبابي خفيف */
-            z-index: -1;
-        }
-
-        /* ===== خلفية النجوم المتحركة (اتلغت عشان الصورة) ===== */
-        .stars, .nebula, .glow-corner, .particle {
-            display: none; /* تم إخفاء التأثيرات القديمة لأننا بنستخدم صورة */
-        }
-
-        /* ===== باقي الستايلات زي ما هي تماماً ===== */
         .top-bar {
-            background: rgba(10, 14, 26, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             padding: 10px 20px;
             text-align: center;
@@ -61,38 +32,30 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 15px;
-            position: relative;
-            z-index: 1;
         }
-
         .main-header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: white;
             border-radius: 30px;
             padding: 25px;
             margin-bottom: 25px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
         }
-
         .logo-area {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
         .logo-icon {
             width: 60px;
             height: 60px;
@@ -104,75 +67,51 @@
             color: white;
             font-size: 30px;
             transform: rotate(-5deg);
-            box-shadow: 0 0 30px rgba(30, 60, 114, 0.3);
-            animation: glowPulse 3s ease-in-out infinite;
         }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(30, 60, 114, 0.2); }
-            50% { box-shadow: 0 0 40px rgba(30, 60, 114, 0.5); }
-        }
-
         .company-name h1 {
-            color: white;
+            color: #1e3c72;
             font-size: 1.8rem;
             margin-bottom: 5px;
-            text-shadow: 0 0 20px rgba(30, 60, 114, 0.3);
         }
-
         .company-name p {
-            color: rgba(255, 255, 255, 0.6);
+            color: #666;
             font-size: 0.9rem;
         }
-
         .connection-status {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #f8f9fa;
             border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .connection-status span {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
         .status-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
             background: #4caf50;
             animation: pulse 2s infinite;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
-
         .status-dot.offline {
             background: #dc3545;
-            box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
         }
-
         @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         /* ===== TABS ===== */
         .tab-system {
             display: flex;
             gap: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 20px;
             padding: 8px;
             margin-bottom: 25px;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             flex-wrap: wrap;
         }
-
         .tab-btn {
             padding: 15px 30px;
             border: none;
@@ -188,64 +127,52 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            color: rgba(255, 255, 255, 0.6);
         }
-
         .tab-btn.active {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
-            box-shadow: 0 5px 25px rgba(30, 60, 114, 0.4);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
         }
-
         .tab-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+            background: #f0f0f0;
         }
-
         .tab-btn.oil-tab {
-            background: rgba(191, 54, 12, 0.2);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .tab-btn.oil-tab.active {
             background: linear-gradient(135deg, #bf360c, #e64a19);
             color: white;
-            box-shadow: 0 5px 25px rgba(191, 54, 12, 0.4);
         }
-
+        .tab-btn.oil-tab.active {
+            background: linear-gradient(135deg, #bf360c, #e64a19);
+            box-shadow: 0 5px 15px rgba(191, 54, 12, 0.4);
+        }
         .tab-btn.oil-tab:hover:not(.active) {
-            background: rgba(191, 54, 12, 0.3);
+            background: #d84315;
             color: white;
         }
-
         .tab-btn.parts-tab {
-            background: rgba(0, 105, 92, 0.2);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .tab-btn.parts-tab.active {
             background: linear-gradient(135deg, #00695c, #00897b);
             color: white;
-            box-shadow: 0 5px 25px rgba(0, 105, 92, 0.4);
         }
-
+        .tab-btn.parts-tab.active {
+            background: linear-gradient(135deg, #00695c, #00897b);
+            box-shadow: 0 5px 15px rgba(0, 105, 92, 0.4);
+        }
         .tab-btn.parts-tab:hover:not(.active) {
-            background: rgba(0, 105, 92, 0.3);
+            background: #00796b;
             color: white;
         }
 
         .tab-content {
             display: none;
         }
-
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.3s ease;
         }
-
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0;
+                transform: translateY(10px); }
+            to { opacity: 1;
+                transform: translateY(0); }
         }
 
         .stats-advanced {
@@ -254,26 +181,19 @@
             gap: 20px;
             margin-bottom: 30px;
         }
-
         .stat-card-advanced {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 25px;
             padding: 20px;
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
         }
-
         .stat-card-advanced:hover {
             transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
-
         .stat-icon {
             width: 60px;
             height: 60px;
@@ -284,31 +204,26 @@
             font-size: 28px;
             color: white;
         }
-
         .stat-icon.cars { background: linear-gradient(135deg, #667eea, #764ba2); }
         .stat-icon.capital { background: linear-gradient(135deg, #f093fb, #f5576c); }
         .stat-icon.expenses { background: linear-gradient(135deg, #4facfe, #00f2fe); }
         .stat-icon.profit { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         .stat-icon.oil { background: linear-gradient(135deg, #ff8a65, #e64a19); }
         .stat-icon.parts { background: linear-gradient(135deg, #00695c, #26a69a); }
-
         .stat-info h3 {
-            color: rgba(255, 255, 255, 0.6);
+            color: #666;
             font-size: 0.9rem;
             margin-bottom: 5px;
         }
-
         .stat-info .number {
             font-size: 1.8rem;
             font-weight: bold;
-            color: white;
+            color: #1e3c72;
         }
 
-        /* ===== QUICK ACTIONS ===== */
+        /* ===== ORIGINAL CARS STYLES ===== */
         .quick-actions {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 100px;
             padding: 15px 25px;
             margin-bottom: 30px;
@@ -316,9 +231,8 @@
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
-
         .quick-btn {
             padding: 12px 25px;
             border: none;
@@ -330,217 +244,184 @@
             gap: 8px;
             transition: all 0.3s ease;
             font-size: 0.9rem;
+        }
+        .quick-btn.primary {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
         }
-
-        .quick-btn.primary { background: linear-gradient(135deg, #1e3c72, #2a5298); }
-        .quick-btn.success { background: linear-gradient(135deg, #2e7d32, #4caf50); }
-        .quick-btn.warning { background: linear-gradient(135deg, #ff8f00, #ffc107); color: #333; }
-        .quick-btn.work { background: linear-gradient(135deg, #00b09b, #96c93d); }
-        .quick-btn.danger { background: linear-gradient(135deg, #c62828, #f44336); }
-        .quick-btn.backup { background: linear-gradient(135deg, #6a1b9a, #9c27b0); }
-        .quick-btn.restore { background: linear-gradient(135deg, #00695c, #00897b); }
-        .quick-btn.oil-btn { background: linear-gradient(135deg, #bf360c, #e64a19); }
-        .quick-btn.parts-btn { background: linear-gradient(135deg, #00695c, #00897b); }
-
+        .quick-btn.success {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            color: white;
+        }
+        .quick-btn.warning {
+            background: linear-gradient(135deg, #ff8f00, #ffc107);
+            color: white;
+        }
+        .quick-btn.work {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+        }
+        .quick-btn.danger {
+            background: linear-gradient(135deg, #c62828, #f44336);
+            color: white;
+        }
+        .quick-btn.backup {
+            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            color: white;
+        }
+        .quick-btn.restore {
+            background: linear-gradient(135deg, #00695c, #00897b);
+            color: white;
+        }
+        .quick-btn.oil-btn {
+            background: linear-gradient(135deg, #bf360c, #e64a19);
+            color: white;
+        }
+        .quick-btn.parts-btn {
+            background: linear-gradient(135deg, #00695c, #00897b);
+            color: white;
+        }
         .quick-btn:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
-        /* ===== FILTER SECTION ===== */
-        .filter-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .search-section {
+            background: white;
             border-radius: 30px;
-            padding: 20px 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 30px;
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             align-items: center;
         }
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
 
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: white;
+            border-radius: 30px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
         .filter-section .filter-group {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
-
         .filter-section label {
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
+            color: #333;
             font-size: 0.9rem;
         }
-
         .filter-section input[type="date"] {
             padding: 10px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
         }
-
         .filter-section input[type="date"]:focus {
             outline: none;
             border-color: #1e3c72;
         }
-
-        .filter-section input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
-
         .filter-section .filter-summary {
             margin-right: auto;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.8);
+            color: #1e3c72;
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: #f0f2f5;
             padding: 8px 18px;
             border-radius: 50px;
         }
 
-        /* ===== SEARCH SECTION ===== */
-        .search-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 15px 45px 15px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .search-box input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            background: transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .filter-btn.active {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            border-color: #1e3c72;
-        }
-
-        .filter-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        /* ===== CARS GRID ===== */
         .cars-advanced-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
-
         .car-advanced-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
-
-        .car-advanced-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-        }
-
         .car-header-gradient {
             height: 120px;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             position: relative;
             padding: 20px;
         }
-
         .car-badge {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             padding: 8px 15px;
             border-radius: 50px;
             color: white;
             font-weight: bold;
         }
-
         .car-number-large {
             position: absolute;
             bottom: -30px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: white;
             padding: 15px 25px;
             border-radius: 20px;
             font-size: 2rem;
             font-weight: bold;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #1e3c72;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-
         .car-content {
             padding: 40px 20px 20px;
-            color: rgba(255, 255, 255, 0.8);
         }
-
         .car-info-row {
             display: flex;
             justify-content: space-between;
@@ -549,173 +430,161 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
         .car-model {
             font-size: 1.3rem;
-            color: white;
+            color: #333;
         }
-
         .status-toggle {
             padding: 8px 20px;
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
-            border: none;
         }
-
-        .status-toggle.working { background: rgba(46, 125, 50, 0.3); color: #81c784; border: 1px solid rgba(76, 175, 80, 0.3); }
-        .status-toggle.repair { background: rgba(198, 40, 40, 0.3); color: #ef9a9a; border: 1px solid rgba(244, 67, 54, 0.3); }
-
+        .status-toggle.working {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-toggle.repair {
+            background: #f8d7da;
+            color: #721c24;
+        }
         .progress-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin: 20px 0;
         }
-
         .progress-item {
             text-align: center;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 15px;
-            padding: 10px;
         }
-
         .progress-label {
-            color: rgba(255, 255, 255, 0.5);
+            color: #666;
             font-size: 0.9rem;
             margin-bottom: 5px;
         }
-
         .progress-value {
             font-size: 1.5rem;
             font-weight: bold;
-            color: white;
+            color: #1e3c72;
         }
-
-        .expenses-history, .work-history, .capital-history {
-            background: rgba(255, 255, 255, 0.03);
+        .expenses-history,
+        .work-history,
+        .capital-history {
+            background: #f8f9fa;
             border-radius: 20px;
             padding: 15px;
             margin: 15px 0;
         }
-
-        .work-history { border-right: 3px solid rgba(0, 176, 155, 0.3); }
-        .capital-history { border-right: 3px solid rgba(255, 193, 7, 0.3); }
-        .expenses-history { border-right: 3px solid rgba(198, 40, 40, 0.3); }
-
-        .expense-item, .work-item, .capital-item {
+        .work-history { background: #f0f9f7; }
+        .capital-history { background: #fffde7; }
+        .expense-item,
+        .work-item,
+        .capital-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            border-bottom: 1px dashed #ddd;
             flex-wrap: wrap;
             gap: 8px;
         }
-
-        .expense-item:last-child, .work-item:last-child, .capital-item:last-child { border-bottom: none; }
-
-        .expense-amount { font-weight: bold; color: #ef9a9a; }
-        .work-amount { font-weight: bold; color: #81c784; }
-        .capital-amount { font-weight: bold; color: #ffd54f; }
-
+        .expense-item:last-child,
+        .work-item:last-child,
+        .capital-item:last-child {
+            border-bottom: none;
+        }
+        .expense-amount { font-weight: bold;
+            color: #c62828; }
+        .work-amount { font-weight: bold;
+            color: #00b09b; }
+        .capital-amount { font-weight: bold;
+            color: #e65100; }
         .delete-record {
-            color: rgba(255, 255, 255, 0.3);
+            color: #999;
             cursor: pointer;
             padding: 5px;
             border-radius: 8px;
             transition: all 0.2s ease;
         }
-
         .delete-record:hover {
-            background: rgba(198, 40, 40, 0.2);
-            color: #ef9a9a;
+            background: #ffebee;
+            color: #c62828;
         }
-
         .car-controls {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 20px;
         }
-
         .control-btn-small {
             padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: none;
             border-radius: 15px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.7);
         }
+        .control-btn-small.expense { background: #fff3e0;
+            color: #e65100; }
+        .control-btn-small.capital { background: #e8eaf6;
+            color: #1a237e; }
+        .control-btn-small.work { background: #e0f2e9;
+            color: #004d40; }
+        .control-btn-small.delete { background: #ffebee;
+            color: #c62828; }
 
-        .control-btn-small:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.08); }
-        .control-btn-small.expense:hover { background: rgba(230, 81, 0, 0.2); color: #ffab91; }
-        .control-btn-small.capital:hover { background: rgba(26, 35, 126, 0.2); color: #9fa8da; }
-        .control-btn-small.work:hover { background: rgba(0, 77, 64, 0.2); color: #80cbc4; }
-        .control-btn-small.delete:hover { background: rgba(198, 40, 40, 0.2); color: #ef9a9a; }
-
-        /* ===== OIL SYSTEM ===== */
-        .oil-page, .parts-page {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        /* ===== OIL SYSTEM STYLES ===== */
+        .oil-page {
+            background: white;
             border-radius: 30px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
-
-        .oil-page h2, .parts-page h2 { color: white; }
-        .oil-page p, .parts-page p { color: rgba(255, 255, 255, 0.5); }
-
-        .oil-selector, .parts-selector {
+        .oil-selector {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
             margin-bottom: 30px;
         }
-
-        .oil-selector select, .parts-selector select {
+        .oil-selector select {
             flex: 1;
             min-width: 200px;
             padding: 15px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid #e0e0e0;
             border-radius: 15px;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+        }
+        .oil-selector select:focus {
+            outline: none;
+            border-color: #bf360c;
         }
 
-        .oil-selector select:focus, .parts-selector select:focus { outline: none; border-color: #1e3c72; }
-        .oil-selector select option, .parts-selector select option { background: #1a1a2e; color: white; }
-
-        .oil-dashboard, .parts-stats {
+        .oil-dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
-
-        .oil-stat, .parts-stat {
-            background: rgba(255, 255, 255, 0.03);
+        .oil-stat {
+            background: #f8f9fa;
             border-radius: 20px;
             padding: 18px;
             text-align: center;
             border-right: 4px solid #bf360c;
         }
-
-        .parts-stat { border-right-color: #00695c; }
-        .oil-stat .label, .parts-stat .label { font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 5px; }
-        .oil-stat .value, .parts-stat .value { font-size: 1.6rem; font-weight: bold; color: white; }
-        .oil-stat .value.green { color: #81c784; }
-        .oil-stat .value.red { color: #ef9a9a; }
-        .oil-stat .value.orange { color: #ffcc80; }
-        .oil-stat .value.blue { color: #90caf9; }
-        .parts-stat .value.green { color: #81c784; }
-        .parts-stat .value.red { color: #ef9a9a; }
-        .parts-stat .value.blue { color: #90caf9; }
+        .oil-stat .label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .oil-stat .value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        .oil-stat .value.green { color: #2e7d32; }
+        .oil-stat .value.red { color: #c62828; }
+        .oil-stat .value.orange { color: #e65100; }
+        .oil-stat .value.blue { color: #1a237e; }
 
         .oil-actions {
             display: flex;
@@ -723,7 +592,6 @@
             flex-wrap: wrap;
             margin-bottom: 25px;
         }
-
         .oil-actions .quick-btn {
             flex: 1;
             min-width: 140px;
@@ -738,42 +606,65 @@
             gap: 8px;
             transition: all 0.3s ease;
             font-size: 0.9rem;
-            color: white;
         }
 
-        .oil-form, .parts-form {
-            background: rgba(255, 255, 255, 0.03);
+        .oil-form {
+            background: #fff3e0;
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 30px;
         }
-
-        .oil-form .form-row, .parts-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .oil-form .form-group, .parts-form .form-group { margin-bottom: 15px; }
-        .oil-form label, .parts-form label { display: block; margin-bottom: 5px; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
-
-        .oil-form input, .oil-form textarea, .parts-form input, .parts-form textarea, .parts-form select {
+        .oil-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .oil-form .form-group {
+            margin-bottom: 15px;
+        }
+        .oil-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        .oil-form input,
+        .oil-form textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: white;
+        }
+        .oil-form input:focus,
+        .oil-form textarea:focus {
+            outline: none;
+            border-color: #bf360c;
+        }
+        .oil-form .btn-oil {
+            background: linear-gradient(135deg, #bf360c, #e64a19);
             color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .oil-form .btn-oil:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(191, 54, 12, 0.3);
         }
 
-        .oil-form input:focus, .oil-form textarea:focus, .parts-form input:focus, .parts-form textarea:focus, .parts-form select:focus { outline: none; border-color: #1e3c72; }
-        .oil-form input::placeholder, .oil-form textarea::placeholder, .parts-form input::placeholder, .parts-form textarea::placeholder { color: rgba(255, 255, 255, 0.3); }
-        .parts-form select option { background: #1a1a2e; color: white; }
-
-        .oil-form .btn-oil { background: linear-gradient(135deg, #bf360c, #e64a19); color: white; border: none; padding: 15px 30px; border-radius: 15px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; width: 100%; }
-        .parts-form .btn-parts { background: linear-gradient(135deg, #00695c, #00897b); color: white; border: none; padding: 15px 30px; border-radius: 15px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; width: 100%; }
-        .oil-form .btn-oil:hover, .parts-form .btn-parts:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
-
-        .oil-history-list, .parts-list { max-height: 400px; overflow-y: auto; }
-
+        .oil-history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
         .oil-record {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8f9fa;
             border-radius: 15px;
             padding: 15px;
             margin-bottom: 10px;
@@ -784,47 +675,252 @@
             gap: 10px;
             border-right: 4px solid #bf360c;
         }
+        .oil-record .info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .oil-record .info .note {
+            font-weight: 600;
+        }
+        .oil-record .info .date {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .oil-record .amounts {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .oil-record .amounts .kg {
+            font-weight: bold;
+            color: #bf360c;
+            font-size: 1.1rem;
+        }
+        .oil-record .amounts .paid {
+            font-weight: bold;
+            color: #c62828;
+        }
+        .oil-record .action-btn {
+            color: #999;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+        }
+        .oil-record .action-btn:hover {
+            background: #f0f0f0;
+        }
+        .oil-record .action-btn.delete:hover {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .oil-record .action-btn.edit:hover {
+            background: #e3f2fd;
+            color: #1a237e;
+        }
+        .no-oil-records {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
 
-        .oil-record .info { display: flex; flex-direction: column; gap: 5px; }
-        .oil-record .info .note { font-weight: 600; color: white; }
-        .oil-record .info .date { font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); }
-        .oil-record .amounts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .oil-record .amounts .kg { font-weight: bold; color: #ff8a65; font-size: 1.1rem; }
-        .oil-record .amounts .paid { font-weight: bold; color: #ef9a9a; }
-        .oil-record .action-btn { color: rgba(255, 255, 255, 0.3); cursor: pointer; padding: 5px 10px; border-radius: 8px; transition: all 0.2s ease; border: none; background: transparent; font-size: 1rem; }
-        .oil-record .action-btn:hover { background: rgba(255, 255, 255, 0.05); }
-        .oil-record .action-btn.delete:hover { background: rgba(198, 40, 40, 0.2); color: #ef9a9a; }
-        .oil-record .action-btn.edit:hover { background: rgba(30, 60, 114, 0.2); color: #90caf9; }
+        /* ===== PARTS SYSTEM STYLES ===== */
+        .parts-page {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .parts-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .parts-selector select {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+        }
+        .parts-selector select:focus {
+            outline: none;
+            border-color: #00695c;
+        }
 
-        .no-oil-records, .no-parts { text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.3); }
-        .no-oil-records i, .no-parts i { font-size: 50px; color: rgba(255, 255, 255, 0.1); margin-bottom: 15px; display: block; }
+        .parts-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .parts-stat {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            border-right: 4px solid #00695c;
+        }
+        .parts-stat .label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .parts-stat .value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        .parts-stat .value.green { color: #2e7d32; }
+        .parts-stat .value.red { color: #c62828; }
+        .parts-stat .value.blue { color: #00695c; }
 
-        /* ===== PARTS GRID ===== */
+        .parts-form {
+            background: #e0f2f1;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .parts-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .parts-form .form-group {
+            margin-bottom: 15px;
+        }
+        .parts-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        .parts-form input,
+        .parts-form textarea,
+        .parts-form select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+        }
+        .parts-form input:focus,
+        .parts-form textarea:focus,
+        .parts-form select:focus {
+            outline: none;
+            border-color: #00695c;
+        }
+        .parts-form .btn-parts {
+            background: linear-gradient(135deg, #00695c, #00897b);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .parts-form .btn-parts:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 105, 92, 0.3);
+        }
+
+        .parts-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
         .parts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px;
         }
-
         .part-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8f9fa;
             border-radius: 15px;
             padding: 15px;
             border-right: 4px solid #00695c;
             transition: all 0.2s ease;
         }
-
-        .part-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
-        .part-card .part-name { font-weight: bold; font-size: 1.1rem; color: white; margin-bottom: 8px; }
-        .part-card .part-details { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); }
-        .part-card .part-details span { background: rgba(255, 255, 255, 0.05); padding: 3px 12px; border-radius: 50px; }
-        .part-card .part-status { display: inline-block; padding: 4px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: bold; }
-        .part-status.good { background: rgba(46, 125, 50, 0.3); color: #81c784; }
-        .part-status.broken { background: rgba(198, 40, 40, 0.3); color: #ef9a9a; }
-        .part-card .part-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .part-card .part-actions button { padding: 5px 15px; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease; background: rgba(255, 255, 255, 0.03); color: rgba(255, 255, 255, 0.6); }
-        .part-card .part-actions .btn-status:hover { background: rgba(0, 105, 92, 0.2); color: #80cbc4; }
-        .part-card .part-actions .btn-delete:hover { background: rgba(198, 40, 40, 0.2); color: #ef9a9a; }
+        .part-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .part-card .part-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+        .part-card .part-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .part-card .part-details span {
+            background: white;
+            padding: 3px 12px;
+            border-radius: 50px;
+        }
+        .part-card .part-status {
+            display: inline-block;
+            padding: 4px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .part-status.good { background: #d4edda; color: #155724; }
+        .part-status.broken { background: #f8d7da; color: #721c24; }
+        .part-card .part-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .part-card .part-actions button {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .part-card .part-actions .btn-status {
+            background: #e3f2fd;
+            color: #1a237e;
+        }
+        .part-card .part-actions .btn-status:hover {
+            background: #bbdefb;
+        }
+        .part-card .part-actions .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .part-card .part-actions .btn-delete:hover {
+            background: #ffcdd2;
+        }
+        .no-parts {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+        .no-parts i {
+            font-size: 50px;
+            color: #ccc;
+            margin-bottom: 15px;
+            display: block;
+        }
 
         /* ===== MODALS ===== */
         .modal-advanced {
@@ -834,18 +930,17 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
             z-index: 1000;
         }
-
-        .modal-advanced.active { display: flex; }
-
+        .modal-advanced.active {
+            display: flex;
+        }
         .modal-content-advanced {
-            background: rgba(20, 25, 45, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 40px;
             padding: 40px;
             width: 90%;
@@ -853,49 +948,76 @@
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp 0.3s ease;
-            color: rgba(255, 255, 255, 0.8);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px);
+                opacity: 0; }
+            to { transform: translateY(0);
+                opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .modal-header h2 {
+            color: #1e3c72;
+        }
+        .close-modal {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #1e3c72;
         }
 
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .modal-header h2 { color: white; }
-        .close-modal { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; color: rgba(255, 255, 255, 0.5); transition: all 0.3s ease; }
-        .close-modal:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: rgba(255, 255, 255, 0.7); font-weight: 600; }
-        .form-control { width: 100%; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; font-size: 1rem; background: rgba(255, 255, 255, 0.05); color: white; }
-        .form-control:focus { outline: none; border-color: #1e3c72; }
-        .form-control option { background: #1a1a2e; color: white; }
-        .form-control::placeholder { color: rgba(255, 255, 255, 0.3); }
-
-        /* ===== TOAST ===== */
         .toast-message {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: rgba(20, 25, 45, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: white;
             border-radius: 50px;
             padding: 15px 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: 10px;
             z-index: 2000;
             animation: slideInRight 0.3s ease;
-            color: white;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100px);
+                opacity: 0; }
+            to { transform: translateX(0);
+                opacity: 1; }
         }
 
-        @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* ===== BACKUP NOTIFICATION ===== */
         .backup-notification {
-            background: linear-gradient(135deg, rgba(106, 27, 154, 0.3), rgba(156, 39, 176, 0.2));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(156, 39, 176, 0.2);
+            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
             color: white;
             padding: 15px;
             border-radius: 20px;
@@ -906,16 +1028,33 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
-        .view-all-btn { background: linear-gradient(135deg, #1e3c72, #2a5298); border: none; color: white; cursor: pointer; font-size: 0.75rem; padding: 5px 12px; border-radius: 20px; transition: all 0.2s ease; }
-        .view-all-btn:hover { transform: scale(1.05); }
-
-        .records-list { width: 100%; }
-        .records-modal-content { max-width: 600px; width: 95%; max-height: 80vh; }
-        .records-list-full { max-height: 60vh; overflow-y: auto; }
-
+        .view-all-btn {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+        .view-all-btn:hover {
+            transform: scale(1.05);
+        }
+        .records-list {
+            width: 100%;
+        }
+        .records-modal-content {
+            max-width: 600px;
+            width: 95%;
+            max-height: 80vh;
+        }
+        .records-list-full {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
         .record-item-full {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8f9fa;
             border-radius: 15px;
             padding: 12px;
             margin-bottom: 10px;
@@ -924,62 +1063,99 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            color: rgba(255, 255, 255, 0.8);
         }
-
-        .record-amount { font-size: 1.2rem; font-weight: bold; }
-        .record-amount.positive { color: #81c784; }
-        .record-amount.negative { color: #ef9a9a; }
-        .record-amount.neutral { color: #ffd54f; }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+        .record-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .record-amount.positive { color: #00b09b; }
+        .record-amount.negative { color: #c62828; }
+        .record-amount.neutral { color: #f57c00; }
+        .record-amount.oil-color { color: #bf360c; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .main-header { flex-direction: column; text-align: center; }
+            .main-header { flex-direction: column;
+                text-align: center; }
             .logo-area { flex-direction: column; }
             .stats-advanced { grid-template-columns: repeat(2, 1fr); }
             .cars-advanced-grid { grid-template-columns: 1fr; }
             .quick-actions { border-radius: 30px; }
-            .quick-btn { flex: 1; justify-content: center; font-size: 0.8rem; padding: 10px 12px; }
-            .toast-message { left: 15px; right: 15px; bottom: 15px; }
-            .expenses-history, .work-history, .capital-history { max-height: none !important; overflow-y: visible !important; }
-            .records-list { max-height: none !important; overflow-y: visible !important; }
-            .expense-item, .work-item, .capital-item { flex-direction: column; align-items: flex-start; }
-            .car-number-large { font-size: 1.2rem; padding: 8px 15px; bottom: -20px; }
-            .car-header-gradient { height: 100px; }
-            .progress-stats { grid-template-columns: 1fr; gap: 10px; }
-            .progress-value { font-size: 1.2rem; }
-            .car-controls { grid-template-columns: repeat(2, 1fr); }
-            .tab-btn { padding: 10px 15px; font-size: 0.85rem; min-width: 80px; }
-            .oil-form .form-row, .parts-form .form-row { grid-template-columns: 1fr; }
-            .oil-dashboard, .parts-stats { grid-template-columns: 1fr 1fr; }
-            .oil-selector, .parts-selector { flex-direction: column; }
-            .filter-section { flex-direction: column; align-items: stretch; }
+            .quick-btn { flex: 1;
+                justify-content: center;
+                font-size: 0.8rem;
+                padding: 10px 12px; }
+            .toast-message { left: 15px;
+                right: 15px;
+                bottom: 15px; }
+            .expenses-history,
+            .work-history,
+            .capital-history {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+            .records-list {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+            .expense-item,
+            .work-item,
+            .capital-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .car-number-large {
+                font-size: 1.2rem;
+                padding: 8px 15px;
+                bottom: -20px;
+            }
+            .car-header-gradient {
+                height: 100px;
+            }
+            .progress-stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .progress-value {
+                font-size: 1.2rem;
+            }
+            .car-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .tab-btn { padding: 10px 15px;
+                font-size: 0.85rem;
+                min-width: 80px; }
+            .oil-form .form-row { grid-template-columns: 1fr; }
+            .oil-dashboard { grid-template-columns: 1fr 1fr; }
+            .oil-selector { flex-direction: column; }
+            .filter-section { flex-direction: column;
+                align-items: stretch; }
             .filter-section .filter-group { flex-wrap: wrap; }
-            .filter-section .filter-summary { margin-right: 0; text-align: center; }
-            .oil-record { flex-direction: column; align-items: stretch; }
+            .filter-section .filter-summary { margin-right: 0;
+                text-align: center; }
+            .oil-record { flex-direction: column;
+                align-items: stretch; }
             .oil-record .amounts { justify-content: space-between; }
             .oil-actions .quick-btn { min-width: 100%; }
+            .parts-form .form-row { grid-template-columns: 1fr; }
+            .parts-stats { grid-template-columns: 1fr 1fr; }
+            .parts-selector { flex-direction: column; }
             .parts-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 480px) {
             .stats-advanced { grid-template-columns: 1fr; }
-            .car-number-large { font-size: 1rem; padding: 6px 12px; }
+            .car-number-large { font-size: 1rem;
+                padding: 6px 12px; }
             .car-model { font-size: 1rem; }
-            .oil-dashboard, .parts-stats { grid-template-columns: 1fr; }
-            .car-controls { grid-template-columns: repeat(2, 1fr); }
+            .oil-dashboard { grid-template-columns: 1fr; }
+            .parts-stats { grid-template-columns: 1fr; }
+            .car-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
-    <!-- ===== الخلفية المتحركة (تم حذف العناصر لأن الخلفية صورة الآن) ===== -->
-
     <div class="top-bar">
         <i class="fas fa-shield-alt"></i> نظام إدارة أسطول الشوقي ترافيل · نسخ احتياطي تلقائي كل 10 أيام
     </div>
@@ -1001,7 +1177,7 @@
 
         <div id="backupNotification" class="backup-notification" style="display: none;">
             <span><i class="fas fa-database"></i> <span id="backupMessage"></span></span>
-            <button onclick="createManualBackup()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 50px; cursor: pointer; font-weight: bold; color: white;">
+            <button onclick="createManualBackup()" style="background: white; border: none; padding: 8px 20px; border-radius: 50px; cursor: pointer; font-weight: bold;">
                 <i class="fas fa-save"></i> عمل نسخة الآن
             </button>
         </div>
@@ -1092,7 +1268,7 @@
                 <button class="quick-btn primary" style="padding:10px 20px; border-radius:15px;" onclick="applyDateFilter()">
                     <i class="fas fa-filter"></i> تطبيق الفلترة
                 </button>
-                <button class="quick-btn" style="padding:10px 20px; border-radius:15px; background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6);" onclick="clearDateFilter()">
+                <button class="quick-btn" style="padding:10px 20px; border-radius:15px; background:#e0e0e0; color:#333;" onclick="clearDateFilter()">
                     <i class="fas fa-times"></i> إلغاء الفلترة
                 </button>
                 <div class="filter-summary" id="filterSummary">
@@ -1121,7 +1297,7 @@
                 <h2 style="margin-bottom:5px; color:#bf360c;">
                     <i class="fas fa-oil-can"></i> نظام إدارة الزيت
                 </h2>
-                <p style="color:rgba(255,255,255,0.4); font-size:0.9rem; margin-bottom:20px;">
+                <p style="color:#999; font-size:0.9rem; margin-bottom:20px;">
                     كل مبلغ تدفعه للزيت يسجل كمصروف ويخصم من الأرباح
                 </p>
 
@@ -1207,7 +1383,7 @@
                     </h3>
                     <div id="oilHistory" class="oil-history-list">
                         <div class="no-oil-records">
-                            <i class="fas fa-oil-can"></i>
+                            <i class="fas fa-oil-can" style="font-size:40px; color:#ccc;"></i>
                             <p>اختر سيارة لعرض سجل الزيت</p>
                         </div>
                     </div>
@@ -1218,10 +1394,10 @@
         <!-- ===== TAB: PARTS SYSTEM ===== -->
         <div id="tab-parts" class="tab-content">
             <div class="parts-page">
-                <h2 style="margin-bottom:5px; color:#26a69a;">
+                <h2 style="margin-bottom:5px; color:#00695c;">
                     <i class="fas fa-tools"></i> نظام إدارة قطع الغيار
                 </h2>
-                <p style="color:rgba(255,255,255,0.4); font-size:0.9rem; margin-bottom:20px;">
+                <p style="color:#999; font-size:0.9rem; margin-bottom:20px;">
                     إدارة مخزون قطع الغيار لكل سيارة (صالحة - تالفة)
                 </p>
 
@@ -1259,7 +1435,7 @@
         </div>
     </div>
 
-    <!-- ===== MODALS ===== -->
+    <!-- ===== ORIGINAL MODALS ===== -->
     <div id="carModal" class="modal-advanced">
         <div class="modal-content-advanced">
             <div class="modal-header">
@@ -1514,8 +1690,8 @@
                 <div class="close-modal" onclick="closeModal('restoreModal')"><i class="fas fa-times"></i></div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 50px; color: #9c27b0;"></i>
-                <p style="margin-top: 10px; color: rgba(255,255,255,0.5);">اختر ملف النسخة الاحتياطية لاستعادة جميع البيانات</p>
+                <i class="fas fa-cloud-upload-alt" style="font-size: 50px; color: #6a1b9a;"></i>
+                <p style="margin-top: 10px; color: #666;">اختر ملف النسخة الاحتياطية لاستعادة جميع البيانات</p>
             </div>
             <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreFromBackup(event)">
             <button class="quick-btn restore" style="width:100%; margin-bottom: 10px;" onclick="document.getElementById('restoreFile').click()">
@@ -1533,8 +1709,8 @@
                 <div class="close-modal" onclick="closeModal('passwordModal')"><i class="fas fa-times"></i></div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-exclamation-triangle" style="font-size: 50px; color: #f44336;"></i>
-                <p style="margin-top: 10px; color: rgba(255,255,255,0.6);">هذا الإجراء سيحذف <strong>جميع البيانات ورؤوس الأموال</strong> بشكل نهائي</p>
+                <i class="fas fa-exclamation-triangle" style="font-size: 50px; color: #c62828;"></i>
+                <p style="margin-top: 10px;">هذا الإجراء سيحذف <strong>جميع البيانات ورؤوس الأموال</strong> بشكل نهائي</p>
             </div>
             <div class="form-group">
                 <label>كلمة المرور</label>
@@ -1543,7 +1719,7 @@
             <button class="quick-btn danger" style="width:100%" onclick="confirmResetAll()">
                 <i class="fas fa-trash-alt"></i> تأكيد التصفير
             </button>
-            <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: rgba(255,255,255,0.3);">كلمة المرور الافتراضية: 123456</p>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #999;">كلمة المرور الافتراضية: 123456</p>
         </div>
     </div>
 
@@ -1554,8 +1730,8 @@
                 <div class="close-modal" onclick="closeModal('deleteRecordPasswordModal')"><i class="fas fa-times"></i></div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-trash-alt" style="font-size: 50px; color: #f44336;"></i>
-                <p style="margin-top: 10px; color: rgba(255,255,255,0.6);">هل أنت متأكد من حذف هذا السجل بشكل نهائي؟</p>
+                <i class="fas fa-trash-alt" style="font-size: 50px; color: #c62828;"></i>
+                <p style="margin-top: 10px;">هل أنت متأكد من حذف هذا السجل بشكل نهائي؟</p>
             </div>
             <div class="form-group">
                 <label>كلمة المرور</label>
@@ -1569,10 +1745,6 @@
 
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
-        // ==============================================
-        // تم حذف دالة createStars لأننا مش محتاجين نجوم مع الصورة
-        // ==============================================
-
         // ==============================================
         // Firebase Config
         // ==============================================
@@ -1647,7 +1819,8 @@
                 parts: parts,
                 stats: {
                     totalCars: cars.length,
-                    totalCapital: cars.reduce((s, c) => s + (c.capital || 0), 0) + capitalRecords.reduce((s, cp) => s + (cp.amount || 0), 0),
+                    totalCapital: cars.reduce((s, c) => s + (c.capital || 0), 0) + capitalRecords.reduce((s, cp) => s + (cp
+                        .amount || 0), 0),
                     totalExpenses: expenses.reduce((s, e) => s + (e.amount || 0), 0),
                     totalWork: workEarnings.reduce((s, w) => s + (w.amount || 0), 0),
                     totalOil: oilRecords.reduce((s, o) => s + (o.amount || 0), 0),
@@ -1677,15 +1850,15 @@
             const container = document.getElementById('backupFilesList');
             if (lastBackup) {
                 container.innerHTML = `
-                            <div style="background: rgba(46,125,50,0.1); border: 1px solid rgba(76,175,80,0.2); padding: 15px; border-radius: 15px; color: rgba(255,255,255,0.8);">
+                            <div style="background: #e8f5e9; padding: 15px; border-radius: 15px;">
                                 <i class="fas fa-check-circle" style="color: #4caf50;"></i>
                                 <strong>آخر نسخة احتياطية:</strong> ${new Date(lastBackup).toLocaleDateString('ar-EG')}
-                                <br><small style="color:rgba(255,255,255,0.4);">يمكنك استعادة البيانات من ملف JSON قمت بحفظه مسبقاً</small>
+                                <br><small>يمكنك استعادة البيانات من ملف JSON قمت بحفظه مسبقاً</small>
                             </div>
                         `;
             } else {
                 container.innerHTML = `
-                            <div style="background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.2); padding: 15px; border-radius: 15px; color: rgba(255,255,255,0.8);">
+                            <div style="background: #fff3e0; padding: 15px; border-radius: 15px;">
                                 <i class="fas fa-info-circle" style="color: #ff9800;"></i>
                                 لا توجد نسخ احتياطية محفوظة. اضغط على "نسخة احتياطية" أولاً.
                             </div>
@@ -1815,7 +1988,8 @@
 
             const getCarCapitalTotal = (carId) => {
                 const car = cars.find(c => c.id === carId);
-                const extraCapital = capitalRecords.filter(cp => cp.carId === carId).reduce((sum, cp) => sum + (cp.amount || 0), 0);
+                const extraCapital = capitalRecords.filter(cp => cp.carId === carId).reduce((sum, cp) => sum + (cp.amount || 0),
+                    0);
                 return (car?.capital || 0) + extraCapital;
             };
 
@@ -1917,7 +2091,9 @@
             const wsOil = XLSX.utils.json_to_sheet(oilLogsData);
             const wsParts = XLSX.utils.json_to_sheet(partsData);
 
-            wsCars['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 25 }, { wch: 18 }];
+            wsCars['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 18 },
+                { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 25 }, { wch: 18 }
+            ];
             wsExpenses['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }];
             wsWork['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }];
             wsCapital['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 30 }];
@@ -2006,7 +2182,7 @@
 
             if (carWork.length === 0) {
                 content.innerHTML =
-                    `<div style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">لا توجد أرباح شغل مسجلة في هذه الفترة</div>`;
+                    `<div style="text-align:center; padding:40px; color:#999;">لا توجد أرباح شغل مسجلة في هذه الفترة</div>`;
             } else {
                 let total = 0;
                 content.innerHTML = carWork.map(w => {
@@ -2014,8 +2190,8 @@
                     return `
                                 <div class="record-item-full">
                                     <div>
-                                        <div style="font-weight:bold; color:white;">${w.note || 'شغل تشغيلي'}</div>
-                                        <small style="color:rgba(255,255,255,0.4);"><i class="fas fa-calendar"></i> ${w.date || ''}</small>
+                                        <div style="font-weight:bold;">${w.note || 'شغل تشغيلي'}</div>
+                                        <small><i class="fas fa-calendar"></i> ${w.date || ''}</small>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="record-amount positive">+${(w.amount || 0).toLocaleString()} جنيه</div>
@@ -2025,7 +2201,7 @@
                             `;
                 }).join('');
                 content.innerHTML +=
-                    `<div style="margin-top:15px; padding:15px; background:rgba(0,176,155,0.1); border-radius:15px; text-align:center; font-weight:bold; color:#81c784;">إجمالي صافي أرباح الشغل في الفترة: ${total.toLocaleString()} جنيه</div>`;
+                    `<div style="margin-top:15px; padding:15px; background:#e0f2e9; border-radius:15px; text-align:center; font-weight:bold;">إجمالي صافي أرباح الشغل في الفترة: ${total.toLocaleString()} جنيه</div>`;
             }
             openModal('allRecordsModal');
         }
@@ -2045,7 +2221,7 @@
 
             if (carExpenses.length === 0) {
                 content.innerHTML =
-                    `<div style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">لا توجد مصروفات مسجلة في هذه الفترة</div>`;
+                    `<div style="text-align:center; padding:40px; color:#999;">لا توجد مصروفات مسجلة في هذه الفترة</div>`;
             } else {
                 let total = 0;
                 content.innerHTML = carExpenses.map(e => {
@@ -2054,8 +2230,8 @@
                     return `
                                 <div class="record-item-full">
                                     <div>
-                                        <div style="font-weight:bold; color:white; ${isOil ? 'color:#ff8a65;' : ''}">${e.note || 'مصروف عام'}</div>
-                                        <small style="color:rgba(255,255,255,0.4);"><i class="fas fa-calendar"></i> ${e.date || ''}</small>
+                                        <div style="font-weight:bold; ${isOil ? 'color:#bf360c;' : ''}">${e.note || 'مصروف عام'}</div>
+                                        <small><i class="fas fa-calendar"></i> ${e.date || ''}</small>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="record-amount negative">-${(e.amount || 0).toLocaleString()} جنيه</div>
@@ -2065,7 +2241,7 @@
                             `;
                 }).join('');
                 content.innerHTML +=
-                    `<div style="margin-top:15px; padding:15px; background:rgba(198,40,40,0.1); border-radius:15px; text-align:center; font-weight:bold; color:#ef9a9a;">إجمالي المصروفات في الفترة: ${total.toLocaleString()} جنيه</div>`;
+                    `<div style="margin-top:15px; padding:15px; background:#ffebee; border-radius:15px; text-align:center; font-weight:bold;">إجمالي المصروفات في الفترة: ${total.toLocaleString()} جنيه</div>`;
             }
             openModal('allRecordsModal');
         }
@@ -2084,11 +2260,11 @@
                 `<i class="fas fa-coins"></i> سجل حركة رأس المال للسيارة ${car?.number || ''}`;
 
             let html =
-                `<div style="padding: 12px; background: rgba(255,193,7,0.1); border-radius: 12px; margin-bottom: 12px; font-weight: bold; border-right: 4px solid #ffc107; color:rgba(255,255,255,0.8);">رأس المال الافتتاحي (عند التأسيس): ${(car?.capital || 0).toLocaleString()} جنيه</div>`;
+                `<div style="padding: 12px; background: #fffde7; border-radius: 12px; margin-bottom: 12px; font-weight: bold; border-right: 4px solid #f57c00;">رأس المال الافتتاحي (عند التأسيس): ${(car?.capital || 0).toLocaleString()} جنيه</div>`;
 
             if (logs.length === 0) {
                 html +=
-                    `<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.3);">لم يتم ضخ دفعات رأس مال إضافية في هذه الفترة</div>`;
+                    `<div style="text-align:center; padding:20px; color:#999;">لم يتم ضخ دفعات رأس مال إضافية في هذه الفترة</div>`;
             } else {
                 let extraTotal = 0;
                 html += logs.map(cp => {
@@ -2096,8 +2272,8 @@
                     return `
                                 <div class="record-item-full">
                                     <div>
-                                        <div style="font-weight:bold; color:white;">${cp.note || 'زيادة رأس مال'}</div>
-                                        <small style="color:rgba(255,255,255,0.4);"><i class="fas fa-calendar"></i> ${cp.date || ''}</small>
+                                        <div style="font-weight:bold;">${cp.note || 'زيادة رأس مال'}</div>
+                                        <small><i class="fas fa-calendar"></i> ${cp.date || ''}</small>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <div class="record-amount neutral">+${(cp.amount || 0).toLocaleString()} جنيه</div>
@@ -2107,7 +2283,7 @@
                             `;
                 }).join('');
                 html +=
-                    `<div style="margin-top:15px; padding:15px; background:rgba(255,193,7,0.1); border-radius:15px; text-align:center; font-weight:bold; color:#ffd54f;">إجمالي الإضافات الضخية في الفترة: ${extraTotal.toLocaleString()} جنيه <br> إجمالي رأس المال الكلي الحالي: ${((car?.capital || 0) + capitalRecords.filter(cp => cp.carId === carId).reduce((s, cp) => s + (cp.amount || 0), 0)).toLocaleString()} جنيه</div>`;
+                    `<div style="margin-top:15px; padding:15px; background:#fff9c4; border-radius:15px; text-align:center; font-weight:bold; color: #b71c1c;">إجمالي الإضافات الضخية في الفترة: ${extraTotal.toLocaleString()} جنيه <br> إجمالي رأس المال الكلي الحالي: ${((car?.capital || 0) + capitalRecords.filter(cp => cp.carId === carId).reduce((s, cp) => s + (cp.amount || 0), 0)).toLocaleString()} جنيه</div>`;
             }
             content.innerHTML = html;
             openModal('allRecordsModal');
@@ -2271,7 +2447,10 @@
                 return;
             }
 
-            if (!confirm(`⚠️ هل أنت متأكد من تصفير الزيت للسيارة ${car.number}؟\nسيتم حذف ${used} كجم من الزيت وجميع سجلات الزيت والمصروفات المرتبطة بها نهائياً!`)) {
+            if (!
+                    confirm(
+                        `⚠️ هل أنت متأكد من تصفير الزيت للسيارة ${car.number}؟\nسيتم حذف ${used} كجم من الزيت وجميع سجلات الزيت والمصروفات المرتبطة بها نهائياً!`
+                    )) {
                 return;
             }
 
@@ -2622,7 +2801,8 @@
         function getFilteredCars() {
             let filtered = [...cars];
             if (currentFilter !== 'all') filtered = filtered.filter(c => c.status === currentFilter);
-            if (searchTerm) filtered = filtered.filter(c => (c.number || '').toLowerCase().includes(searchTerm) || (c.model || '').toLowerCase().includes(searchTerm));
+            if (searchTerm) filtered = filtered.filter(c => (c.number || '').toLowerCase().includes(searchTerm) || (c.model ||
+                '').toLowerCase().includes(searchTerm));
             return filtered;
         }
 
@@ -2642,7 +2822,7 @@
             const filteredCars = getFilteredCars();
             if (filteredCars.length === 0) {
                 grid.innerHTML =
-                    `<div style="grid-column:1/-1; text-align:center; padding:60px; background:rgba(255,255,255,0.03); border-radius:30px; color:rgba(255,255,255,0.3);"><i class="fas fa-car" style="font-size:60px; color:rgba(255,255,255,0.1);"></i><h3>لا توجد نتائج بحث مطابقة</h3></div>`;
+                    `<div style="grid-column:1/-1; text-align:center; padding:60px; background:white; border-radius:30px;"><i class="fas fa-car" style="font-size:60px; color:#ccc;"></i><h3>لا توجد نتائج بحث مطابقة</h3></div>`;
                 return;
             }
 
@@ -2658,7 +2838,8 @@
                 const totalExpenses = carExpenses.reduce((s, e) => s + (e.amount || 0), 0);
                 const totalWork = carWork.reduce((s, w) => s + (w.amount || 0), 0);
 
-                const allCapitals = capitalRecords.filter(cp => cp.carId === car.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+                const allCapitals = capitalRecords.filter(cp => cp.carId === car.id).sort((a, b) => new Date(b.date) - new Date(
+                    a.date));
                 const extraCapital = getCarExtraCapital(car.id);
                 const totalCapitalInvested = (car.capital || 0) + extraCapital;
 
@@ -2690,66 +2871,66 @@
                                     <span class="status-toggle ${car.status}" onclick="toggleCarStatus('${car.id}')">${car.status === 'working' ? '🚀 تعمل' : '🔧 صيانة'}</span>
                                 </div>
 
-                                ${filterActive ? `<div style="background:rgba(30,60,114,0.2); padding:6px 12px; border-radius:10px; margin-bottom:10px; font-size:0.8rem; text-align:center; color:rgba(255,255,255,0.6);"><i class="fas fa-filter"></i> ${filterText}</div>` : ''}
+                                ${filterActive ? `<div style="background:#e3f2fd; padding:6px 12px; border-radius:10px; margin-bottom:10px; font-size:0.8rem; text-align:center; color:#1a237e;"><i class="fas fa-filter"></i> ${filterText}</div>` : ''}
 
                                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
                                     ${car.oilCapacity > 0 ? `
-                                    <div style="background:rgba(191,54,12,0.1); padding:10px 15px; border-radius:12px; flex:1; min-width:150px; cursor:pointer; border:1px solid rgba(191,54,12,0.1);" onclick="switchTab('oil', document.querySelector('.tab-btn.oil-tab')); setTimeout(() => document.getElementById('oilCarSelect').value='${car.id}', 100); loadOilData();">
-                                        <span><i class="fas fa-oil-can" style="color:#ff8a65;"></i> 🛢️ الزيت</span>
+                                    <div style="background:#fff3e0; padding:10px 15px; border-radius:12px; flex:1; min-width:150px; cursor:pointer;" onclick="switchTab('oil', document.querySelector('.tab-btn.oil-tab')); setTimeout(() => document.getElementById('oilCarSelect').value='${car.id}', 100); loadOilData();">
+                                        <span><i class="fas fa-oil-can" style="color:#bf360c;"></i> 🛢️ الزيت</span>
                                         <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                                            <span>المتبقي: <strong style="color:${remainingOil < 5 ? '#ef9a9a' : '#81c784'};">${remainingOil} كجم</strong></span>
-                                            <span>مدفوع: <strong style="color:#ff8a65;">${oilPaid.toLocaleString()} ج</strong></span>
+                                            <span>المتبقي: <strong style="color:${remainingOil < 5 ? '#c62828' : '#2e7d32'};">${remainingOil} كجم</strong></span>
+                                            <span>مدفوع: <strong style="color:#bf360c;">${oilPaid.toLocaleString()} ج</strong></span>
                                         </div>
                                     </div>
                                     ` : `
-                                    <div style="background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:12px; flex:1; min-width:150px; text-align:center; color:rgba(255,255,255,0.3); font-size:0.85rem;">
+                                    <div style="background:#f5f5f5; padding:10px 15px; border-radius:12px; flex:1; min-width:150px; text-align:center; color:#999; font-size:0.85rem;">
                                         <i class="fas fa-oil-can"></i> لم يتم إعداد الزيت
                                         <button class="quick-btn oil-btn" style="padding:3px 12px; font-size:0.7rem; border-radius:10px;" onclick="switchTab('oil', document.querySelector('.tab-btn.oil-tab')); addNewOilCar();">إعداد</button>
                                     </div>
                                     `}
-                                    <div style="background:rgba(0,105,92,0.1); padding:10px 15px; border-radius:12px; flex:1; min-width:120px; cursor:pointer; border:1px solid rgba(0,105,92,0.1);" onclick="switchTab('parts', document.querySelector('.tab-btn.parts-tab')); setTimeout(() => document.getElementById('partsCarSelect').value='${car.id}', 100); loadPartsData();">
-                                        <span><i class="fas fa-tools" style="color:#26a69a;"></i> 🔧 قطع الغيار</span>
+                                    <div style="background:#e0f2f1; padding:10px 15px; border-radius:12px; flex:1; min-width:120px; cursor:pointer;" onclick="switchTab('parts', document.querySelector('.tab-btn.parts-tab')); setTimeout(() => document.getElementById('partsCarSelect').value='${car.id}', 100); loadPartsData();">
+                                        <span><i class="fas fa-tools" style="color:#00695c;"></i> 🔧 قطع الغيار</span>
                                         <div style="text-align:center; margin-top:5px;">
-                                            <strong style="color:#26a69a; font-size:1.2rem;">${carPartsCount}</strong>
-                                            <span style="font-size:0.8rem; color:rgba(255,255,255,0.4);">قطعة</span>
+                                            <strong style="color:#00695c; font-size:1.2rem;">${carPartsCount}</strong>
+                                            <span style="font-size:0.8rem; color:#666;">قطعة</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="progress-stats">
-                                    <div class="progress-item" style="cursor:pointer; background:rgba(255,193,7,0.05); padding:5px; border-radius:10px;" onclick="showAllCapitalRecords('${car.id}')">
+                                    <div class="progress-item" style="cursor:pointer; background:#fffde7; padding:5px; border-radius:10px;" onclick="showAllCapitalRecords('${car.id}')">
                                         <div class="progress-label">إجمالي رأس المال ℹ️</div>
-                                        <div class="progress-value" style="color:#ffd54f;">${totalCapitalInvested.toLocaleString()} ج</div>
+                                        <div class="progress-value" style="color:#f57c00;">${totalCapitalInvested.toLocaleString()} ج</div>
                                     </div>
                                     <div class="progress-item">
                                         <div class="progress-label">صافي التشغيل (الشغل)</div>
-                                        <div class="progress-value" style="color:${operationNetProfit >= 0 ? '#81c784' : '#ef9a9a'}">${operationNetProfit.toLocaleString()} ج</div>
+                                        <div class="progress-value" style="color:${operationNetProfit >= 0 ? '#2e7d32' : '#c62828'}">${operationNetProfit.toLocaleString()} ج</div>
                                     </div>
                                 </div>
 
                                 <!-- Capital History -->
                                 <div class="capital-history">
                                     <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                        <span style="color: #ffd54f; font-weight: bold;"><i class="fas fa-coins"></i> دفعات رأس المال </span>
-                                        <button class="view-all-btn" onclick="showAllCapitalRecords('${car.id}')">تفاصيل رأس المال <i class="fas fa-arrow-left"></i></button>
+                                        <span style="color: #e65100; font-weight: bold;"><i class="fas fa-coins"></i> دفعات رأس المال </span>
+                                        <button class="view-all-btn" style="background: linear-gradient(135deg, #ff8f00, #ffc107);" onclick="showAllCapitalRecords('${car.id}')">تفاصيل رأس المال <i class="fas fa-arrow-left"></i></button>
                                     </div>
                                     <div class="records-list">
-                                        <div class="capital-item" style="background:rgba(255,255,255,0.02); padding: 5px 8px; border-radius: 8px;">
-                                            <div><strong style="color:rgba(255,255,255,0.6);">رأس المال </strong></div>
-                                            <div class="capital-amount" style="color: rgba(255,255,255,0.4);">${(car.capital || 0).toLocaleString()}</div>
+                                        <div class="capital-item" style="background: rgba(0,0,0,0.02); padding: 5px 8px; border-radius: 8px;">
+                                            <div><strong>رأس المال </strong></div>
+                                            <div class="capital-amount" style="color: #757575;">${(car.capital || 0).toLocaleString()}</div>
                                         </div>
                                         ${displayCapitals.map(cp => `
                                         <div class="capital-item">
                                             <div>
-                                                <div class="capital-note" style="font-size:0.85rem; font-weight:500; color:rgba(255,255,255,0.8);">${cp.note || 'دفعة مضافة'}</div>
-                                                <small style="color:rgba(255,255,255,0.3);">${cp.date || ''}</small>
+                                                <div class="capital-note" style="font-size:0.85rem; font-weight:500;">${cp.note || 'دفعة مضافة'}</div>
+                                                <small>${cp.date || ''}</small>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:10px;">
                                                 <div class="capital-amount">+${(cp.amount || 0).toLocaleString()}</div>
                                                 <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${cp.id}', 'capital')" title="حذف الدفعة"></i>
                                             </div>
                                         </div>`).join('')}
-                                        ${allCapitals.length === 0 ? '<div style="font-size:0.75rem; color:rgba(255,255,255,0.2); text-align:center; padding-top:5px;">لم يتم ضخ دفعات إضافية أخرى</div>' : ''}
+                                        ${allCapitals.length === 0 ? '<div style="font-size:0.75rem; color:#999; text-align:center; padding-top:5px;">لم يتم ضخ دفعات إضافية أخرى</div>' : ''}
                                     </div>
                                 </div>
 
@@ -2757,30 +2938,30 @@
                                 ${carWork.length > 0 ? `
                                 <div class="work-history">
                                     <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                        <span style="color:rgba(255,255,255,0.6);"><i class="fas fa-briefcase"></i> حركة الأرباح والشغل ${filterActive ? '(مفلتر)' : ''}</span>
+                                        <span><i class="fas fa-briefcase"></i> حركة الأرباح والشغل ${filterActive ? '(مفلتر)' : ''}</span>
                                         <button class="view-all-btn" onclick="showAllWorkRecords('${car.id}')">عرض الكل <i class="fas fa-arrow-left"></i></button>
                                     </div>
                                     <div class="records-list">
                                         ${displayWork.map(w => `
                                         <div class="work-item">
                                             <div>
-                                                <div class="work-note" style="color:rgba(255,255,255,0.7);">${w.note || 'إيراد تشغيل'}</div>
-                                                <small style="color:rgba(255,255,255,0.3);">${w.date || ''}</small>
+                                                <div class="work-note">${w.note || 'إيراد تشغيل'}</div>
+                                                <small>${w.date || ''}</small>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:10px;">
                                                 <div class="work-amount">+${(w.amount || 0).toLocaleString()}</div>
                                                 <i class="fas fa-trash-alt delete-record" onclick="deleteRecord('${w.id}', 'work')" title="حذف"></i>
                                             </div>
                                         </div>`).join('')}
-                                        ${carWork.length > 2 ? `<div style="text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.2); padding-top:5px;">+ ${carWork.length - 2} سجلات أخرى</div>` : ''}
+                                        ${carWork.length > 2 ? `<div style="text-align:center; font-size:0.8rem; color:#999; padding-top:5px;">+ ${carWork.length - 2} سجلات أخرى</div>` : ''}
                                     </div>
-                                </div>` : '<div class="work-history" style="text-align:center; color:rgba(255,255,255,0.2);">لا توجد أرباح شغل مسجلة في هذه الفترة</div>'}
+                                </div>` : '<div class="work-history" style="text-align:center; color:#999;">لا توجد أرباح شغل مسجلة في هذه الفترة</div>'}
 
                                 <!-- Expenses History (including oil expenses) -->
                                 ${carExpenses.length > 0 ? `
                                 <div class="expenses-history">
                                     <div style="display:flex; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                        <span style="color:rgba(255,255,255,0.6);"><i class="fas fa-wrench"></i> المصروفات (قطع غيار + زيت) ${filterActive ? '(مفلتر)' : ''}</span>
+                                        <span><i class="fas fa-wrench"></i> المصروفات (قطع غيار + زيت) ${filterActive ? '(مفلتر)' : ''}</span>
                                         <button class="view-all-btn" onclick="showAllExpensesRecords('${car.id}')">عرض الكل <i class="fas fa-arrow-left"></i></button>
                                     </div>
                                     <div class="records-list">
@@ -2789,8 +2970,8 @@
                                             return `
                                             <div class="expense-item" style="${isOil ? 'border-right: 3px solid #bf360c;' : ''}">
                                                 <div>
-                                                    <div class="expense-note" style="${isOil ? 'color:#ff8a65;' : 'color:rgba(255,255,255,0.7);'}">${e.note || 'مصروف عام'} ${isOil ? '🛢️' : ''}</div>
-                                                    <small style="color:rgba(255,255,255,0.3);">${e.date || ''}</small>
+                                                    <div class="expense-note" style="${isOil ? 'color:#bf360c;' : ''}">${e.note || 'مصروف عام'} ${isOil ? '🛢️' : ''}</div>
+                                                    <small>${e.date || ''}</small>
                                                 </div>
                                                 <div style="display:flex; align-items:center; gap:10px;">
                                                     <div class="expense-amount">-${(e.amount || 0).toLocaleString()}</div>
@@ -2798,25 +2979,25 @@
                                                 </div>
                                             </div>
                                         `}).join('')}
-                                        ${carExpenses.length > 2 ? `<div style="text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.2); padding-top:5px;">+ ${carExpenses.length - 2} سجلات أخرى</div>` : ''}
+                                        ${carExpenses.length > 2 ? `<div style="text-align:center; font-size:0.8rem; color:#999; padding-top:5px;">+ ${carExpenses.length - 2} سجلات أخرى</div>` : ''}
                                     </div>
-                                </div>` : '<div class="expenses-history" style="text-align:center; color:rgba(255,255,255,0.2);">لا توجد مصروفات مسجلة في هذه الفترة</div>'}
+                                </div>` : '<div class="expenses-history" style="text-align:center; color:#999;">لا توجد مصروفات مسجلة في هذه الفترة</div>'}
 
                                 <!-- Net Profit -->
-                                <div class="net-profit" style="background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; margin:15px 0;">
+                                <div class="net-profit" style="background:#f5f5f5; padding:15px; border-radius:15px; margin:15px 0;">
                                     <div style="display:flex; justify-content:space-between;">
-                                        <span style="color:rgba(255,255,255,0.6);">💼 إجمالي أرباح الشغل</span>
-                                        <span style="color:#81c784; font-weight:bold;">+${totalWork.toLocaleString()} جنيه</span>
+                                        <span>💼 إجمالي أرباح الشغل</span>
+                                        <span style="color:#00b09b; font-weight:bold;">+${totalWork.toLocaleString()} جنيه</span>
                                     </div>
                                     <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                                        <span style="color:rgba(255,255,255,0.6);">🔧 إجمالي المصروفات (بما فيها الزيت)</span>
-                                        <span style="color:#ef9a9a; font-weight:bold;">-${totalExpenses.toLocaleString()} جنيه</span>
+                                        <span>🔧 إجمالي المصروفات (بما فيها الزيت)</span>
+                                        <span style="color:#c62828; font-weight:bold;">-${totalExpenses.toLocaleString()} جنيه</span>
                                     </div>
-                                    <div style="display:flex; justify-content:space-between; border-top:2px dashed rgba(255,255,255,0.05); padding-top:8px; margin-top:8px;">
-                                        <span style="font-weight:bold; color:rgba(255,255,255,0.8);">الصافي التشغيلي الحر</span>
-                                        <span style="font-size:1.3rem; font-weight:bold; color:${operationNetProfit >= 0 ? '#81c784' : '#ef9a9a'};">${operationNetProfit.toLocaleString()} جنيه</span>
+                                    <div style="display:flex; justify-content:space-between; border-top:2px dashed #ccc; padding-top:8px; margin-top:8px;">
+                                        <span style="font-weight:bold; color:#1e3c72;">الصافي التشغيلي الحر</span>
+                                        <span style="font-size:1.3rem; font-weight:bold; color:${operationNetProfit >= 0 ? '#2e7d32' : '#c62828'};">${operationNetProfit.toLocaleString()} جنيه</span>
                                     </div>
-                                    ${filterActive ? `<div style="font-size:0.75rem; color:rgba(255,255,255,0.2); text-align:center; margin-top:5px;">📅 حسب الفترة المحددة</div>` : ''}
+                                    ${filterActive ? `<div style="font-size:0.75rem; color:#999; text-align:center; margin-top:5px;">📅 حسب الفترة المحددة</div>` : ''}
                                 </div>
 
                                 <div class="car-controls">
@@ -3040,7 +3221,7 @@
                 document.getElementById('oilTotalPaid').textContent = '-';
                 document.getElementById('oilRemainingPrice').textContent = '-';
                 document.getElementById('oilHistory').innerHTML =
-                    `<div class="no-oil-records"><i class="fas fa-oil-can"></i><p>اختر سيارة لعرض سجل الزيت</p></div>`;
+                    `<div class="no-oil-records"><i class="fas fa-oil-can" style="font-size:40px; color:#ccc;"></i><p>اختر سيارة لعرض سجل الزيت</p></div>`;
                 return;
             }
 
@@ -3065,7 +3246,7 @@
             const history = document.getElementById('oilHistory');
             if (records.length === 0) {
                 history.innerHTML =
-                    `<div class="no-oil-records"><i class="fas fa-oil-can"></i><p>لا توجد سجلات زيت لهذه السيارة</p></div>`;
+                    `<div class="no-oil-records"><i class="fas fa-oil-can" style="font-size:30px; color:#ccc;"></i><p>لا توجد سجلات زيت لهذه السيارة</p></div>`;
             } else {
                 history.innerHTML = records.sort((a, b) => new Date(b.date) - new Date(a.date)).map(r => `
                             <div class="oil-record">
@@ -3212,7 +3393,8 @@
         function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = 'toast-message';
-            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle');
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' :
+                'info-circle');
             toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
